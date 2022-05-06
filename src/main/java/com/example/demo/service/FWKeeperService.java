@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.sql.Date;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class FWKeeperService {
 		System.out.println("St: "+st);
 		System.out.println("DepSt: "+depSt);
 		transRep.save(t);
-		stRep.saveAll(List.of(st,depSt));
+		stRep.saveAll(Arrays.asList(st,depSt));
 		}
 	
 		return "DONE";
@@ -135,7 +136,7 @@ public class FWKeeperService {
 				Stock depSt = stRep.getStock(st.getItem().getItem_id(),st.getEntry_date(),st.getExpired_date(), st.getPrice(), st.getStatus(),depWH);
 				st.setQuantity(st.getQuantity() + r.getRefund_quantity());
 				depSt.setQuantity(depSt.getQuantity() - r.getRefund_quantity());
-				stRep.saveAll(List.of(st,depSt));
+				stRep.saveAll(Arrays.asList(st,depSt));
 			}
 			
 		}

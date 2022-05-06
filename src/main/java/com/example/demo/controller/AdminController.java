@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,9 +98,6 @@ public class AdminController {
 
 	}
 	
-	
-	
-	
 	@GetMapping("/warehouses")
 	public ResponseEntity<List<Warehouse>> readNotes(){
 	
@@ -163,7 +161,7 @@ public class AdminController {
 	}
 	@GetMapping("/dets")
 	public List<Long> getDets(){
-		return List.of(whRep.countAllActiveWarehouse(),itemRep.countAllActiveItems(),userRep.countAllActiveUser());
+		return Arrays.asList(whRep.countAllActiveWarehouse(),itemRep.countAllActiveItems(),userRep.countAllActiveUser());
 	}
 	
 	}
