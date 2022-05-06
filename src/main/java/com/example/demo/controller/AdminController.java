@@ -35,6 +35,11 @@ public class AdminController {
 	@Autowired ItemRepository itemRep;
 	@Autowired UserRepository userRep;
 
+	@GetMapping("/helloworld")
+	public String hello() {
+		return "HELLO WORLD";
+	}
+	
 	@GetMapping("/items")
 	public ResponseEntity<List<Item>> readItems(){
 		return adminService.readItems();
