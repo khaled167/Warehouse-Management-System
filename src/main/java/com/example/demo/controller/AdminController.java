@@ -106,8 +106,8 @@ public class AdminController {
 	
 	@GetMapping("/warehouses")
 	public ResponseEntity<List<Warehouse>> readNotes(){
-		return new ResponseEntity<List<Warehouse>>(whRep.findAll(),HttpStatus.OK);
-//		return adminService.readWarehouses();
+//		return new ResponseEntity<List<Warehouse>>(whRep.findAll(),HttpStatus.OK);
+		return adminService.readWarehouses();
 		}
 
 	@PostMapping("/warehouses/")
