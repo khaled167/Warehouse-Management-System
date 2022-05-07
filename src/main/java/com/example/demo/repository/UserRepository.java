@@ -7,7 +7,7 @@ import com.example.demo.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 	
-	@Query(value = "select * from users" , nativeQuery = true)
+	@Query(value = "SELECT * FROM users" , nativeQuery = true)
 	List<User> findaus();
 	
 	@Query(value=" SELECT * FROM users u WHERE u.is_available = 1", nativeQuery = true)
