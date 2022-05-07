@@ -40,7 +40,10 @@ public class AdminController {
 		return adminService.makeFirstUser();
 		
 	}
-	
+	@GetMapping("/test")
+	public List<User> test(){
+		return userRep.findaus();
+	}
 	@GetMapping("/items")
 	public ResponseEntity<List<Item>> readItems(){
 		return adminService.readItems();
