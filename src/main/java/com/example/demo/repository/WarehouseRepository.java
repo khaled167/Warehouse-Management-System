@@ -10,7 +10,7 @@ import com.example.demo.entity.Warehouse;
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
 
-	@Query(value = " SELECT * FROM warehouses w WHERE w.is_available = 1  && w.warehouse_name != 'لايوجد'")
+	@Query(value = " SELECT * FROM warehouses w WHERE w.is_available = 1  && w.warehouse_name != 'لايوجد'", nativeQuery = true)
 	List<Warehouse> findAllActiveWarehouse();
 
 	@Query(value = " SELECT count(*) FROM warehouses w WHERE w.is_available = 1  && w.warehouse_name != 'لايوجد'", nativeQuery = true)
