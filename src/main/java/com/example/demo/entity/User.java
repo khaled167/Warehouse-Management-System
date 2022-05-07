@@ -32,6 +32,20 @@ public class User {
 	private int NotificationNum;
 	private boolean is_available;
 	private String national_num;
+	public User(String fullname, String username, String password, String address, String phoneNumber,
+			String email_address, Date birthday, int notificationNum, boolean is_available, String national_num) {
+		super();
+		this.fullname = fullname;
+		this.username = username;
+		this.password = password;
+		this.address = address;
+		this.phoneNumber = phoneNumber;
+		this.email_address = email_address;
+		this.birthday = birthday;
+		NotificationNum = notificationNum;
+		this.is_available = is_available;
+		this.national_num = national_num;
+	}
 
 	
 

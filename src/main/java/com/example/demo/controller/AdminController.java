@@ -37,7 +37,8 @@ public class AdminController {
 
 	@GetMapping("/helloworld")
 	public String hello() {
-		return "HELLO WORLD";
+		return adminService.makeFirstUser();
+		
 	}
 	
 	@GetMapping("/items")

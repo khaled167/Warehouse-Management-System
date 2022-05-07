@@ -32,14 +32,22 @@ public class AdminService {
 	@Autowired private AdminActionRepository adRepo;
 	@Autowired private AdminEditDetailsRepository adeRepo;
 	
-
+	public String makeFirstUser(){
+        long millis=System.currentTimeMillis();  
+		User admin =new User("احمد محمد","احمد999","20405060","109 شارع","0124599","ahmed@example.com",new Date(millis),0,true,"28888");
+		Warehouse ware=new Warehouse("لايوجد","لايوجد","لايوجد","لايوجد","لايوجد",new Date(millis),true);
+		uRepo.save(admin);
+		wRepo.save(ware);
+		rRepo.save(new Role(admin,ware,1500,"ادمن",new Date(millis),new Date(millis)));
+		return "done";
+	}
 	public ResponseEntity<List<Item>> readItems(){
 		return new ResponseEntity<List<Item>>(iRepo.findAllActiveItems(),HttpStatus.OK);
 	}
 	public ResponseEntity<Item> createItem(Item item){
         long millis=System.currentTimeMillis();  
 		Date date = new Date(millis);
-		User user=uRepo.findById((long) 2).get();
+		User user=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(user,"اضافة","صنف",item.getItem_id(),item.getItem_name(),date);
 	    adRepo.save(adminAction);
 		return new ResponseEntity<Item>(iRepo.save(item),HttpStatus.CREATED);
@@ -53,7 +61,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			Item deletedItem= iRepo.findById(id).get();
 		deletedItem.setIs_available(false);
-		User admin=uRepo.findById((long) 2).get();
+		User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"ازالة","صنف",deletedItem.getItem_id(),deletedItem.getItem_name(),date);
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
@@ -61,7 +69,7 @@ public class AdminService {
 	public ResponseEntity<Item> updateItem(Holder holder){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);
-			User admin=uRepo.findById((long) 2).get();
+			User admin=uRepo.findById((long) 1).get();
 		Item item=iRepo.findById(holder.getId()).get();
 		AdminAction adminAction=new AdminAction
 		(admin,"تعديل","صنف",item.getItem_id(),item.getItem_name(),date);
@@ -102,7 +110,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			Item deletedItem= iRepo.findById(id).get();
 		deletedItem.setIs_available(true);
-		User admin=uRepo.findById((long) 2).get();
+		User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"استرجاع","صنف",deletedItem.getItem_id(),deletedItem.getItem_name(),date);
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
@@ -110,7 +118,7 @@ public class AdminService {
 
 	
 	public ResponseEntity<List<User>> readUsers(){
-		return new ResponseEntity<List<User>>(uRepo.findAllActiveUser(),HttpStatus.OK);
+		return new ResponseEntity<List<User>>(uRepo.findAll(),HttpStatus.OK);
 	}
 	public ResponseEntity<User> createUser(User user){
 		User checkeduser=uRepo.findUserByUserName(user.getUsername());
@@ -119,7 +127,7 @@ public class AdminService {
 			}else {
 				 long millis=System.currentTimeMillis();  
 					Date date = new Date(millis);
-					User admin=uRepo.findById((long) 2).get();
+					User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"اضافة","مستخدم",user.getUser_id(),user.getFullname(),date);
 	    adRepo.save(adminAction);
 		return new ResponseEntity<User>(uRepo.save(user),HttpStatus.CREATED);
@@ -133,7 +141,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			User deletedUser= uRepo.findById(id).get();
 		deletedUser.set_available(false);
-		User admin=uRepo.findById((long) 2).get();
+		User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"ازالة","مستخدم",deletedUser.getUser_id(),deletedUser.getFullname(),date);
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
@@ -141,7 +149,7 @@ public class AdminService {
 	public ResponseEntity<User> updateUser(Holder holder){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);	
-			User admin=uRepo.findById((long) 2).get();
+			User admin=uRepo.findById((long) 1).get();
 		User user=uRepo.findById(holder.getId()).get();
 		AdminAction adminAction=new AdminAction
 		(admin,"تعديل","مستخدم",user.getUser_id(),user.getFullname(),date);
@@ -191,7 +199,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			User deletedUser= uRepo.findById(id).get();
 		deletedUser.set_available(true);
-		User admin=uRepo.findById((long) 2).get();
+		User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"استرجاع","مستخدم",deletedUser.getUser_id(),deletedUser.getFullname(),date);
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
@@ -205,7 +213,7 @@ public class AdminService {
 	public ResponseEntity<Warehouse> createWarehouse(Warehouse warehouse){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);	
-			User admin=uRepo.findById((long) 2).get();
+			User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"اضافة","مخزن",warehouse.getWarehouse_id(),warehouse.getWarehouse_name(),date);
 	    adRepo.save(adminAction);
 		return new ResponseEntity<Warehouse>(wRepo.save(warehouse),HttpStatus.CREATED);
@@ -219,7 +227,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			Warehouse deletedWarehouse= wRepo.findById(id).get();
 			deletedWarehouse.setIs_available(false);
-			User admin=uRepo.findById((long) 2).get();
+			User admin=uRepo.findById((long) 1).get();
 			AdminAction adminAction=new AdminAction(admin,"ازالة","مخزن",deletedWarehouse.getWarehouse_id(),deletedWarehouse.getWarehouse_name(),date);
 			adRepo.save(adminAction);
 		
@@ -228,7 +236,7 @@ public class AdminService {
 	public ResponseEntity<Warehouse> updateWarehouse(Holder holder ){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);
-			User admin=uRepo.findById((long) 2).get();
+			User admin=uRepo.findById((long) 1).get();
 		Warehouse warehouse=wRepo.findById(holder.getId()).get();
 		AdminAction adminAction=new AdminAction
 		(admin,"تعديل","مخزن",warehouse.getWarehouse_id(),warehouse.getWarehouse_name(),date);
@@ -269,7 +277,7 @@ public class AdminService {
 			Date date = new Date(millis);
 			Warehouse deletedWarehouse= wRepo.findById(id).get();
 		deletedWarehouse.setIs_available(true);
-		User admin=uRepo.findById((long) 2).get();
+		User admin=uRepo.findById((long) 1).get();
 		AdminAction adminAction=new AdminAction(admin,"استرجاع","مخزن",deletedWarehouse.getWarehouse_id(),deletedWarehouse.getWarehouse_name(),date);
 		adRepo.save(adminAction);
 	
@@ -281,7 +289,7 @@ public class AdminService {
 	}
 	public ResponseEntity<Role> creatUeserRole(Role role){
 		if(role.getWarehouse()==null) {
-			role.setWarehouse(wRepo.findById((long) 2).get());
+			role.setWarehouse(wRepo.findById((long) 1).get());
 		}uRepo.save(role.getUser());
 		return new ResponseEntity<Role>(rRepo.save(role),HttpStatus.CREATED);
 		

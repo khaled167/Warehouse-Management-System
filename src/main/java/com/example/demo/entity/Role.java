@@ -35,6 +35,16 @@ public class Role {
 		private String role;
 		private Date date_of_assign;
 		private Date date_of_resign;
+		public Role(User user, Warehouse warehouse, double salary, String role, Date date_of_assign,
+				Date date_of_resign) {
+			super();
+			this.user = user;
+			this.warehouse = warehouse;
+			this.salary = salary;
+			this.role = role;
+			this.date_of_assign = date_of_assign;
+			this.date_of_resign = date_of_resign;
+		}
 
 		
 

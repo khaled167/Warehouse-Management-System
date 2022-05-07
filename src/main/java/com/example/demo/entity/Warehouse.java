@@ -29,4 +29,16 @@ public class Warehouse {
 		public void setIs_available(boolean is_available) {
 			this.is_available = is_available;
 		}
+		public Warehouse(String warehouse_name, String location, String phone_number, String warehouse_type,
+				String description, Date establishment_time, boolean is_available) {
+			super();
+			this.warehouse_name = warehouse_name;
+			this.location = location;
+			this.phone_number = phone_number;
+			this.warehouse_type = warehouse_type;
+			this.description = description;
+			this.establishment_time = establishment_time;
+			this.is_available = is_available;
+		}
+		
 }
