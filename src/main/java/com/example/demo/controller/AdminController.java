@@ -38,7 +38,6 @@ public class AdminController {
 	@GetMapping("/helloworld")
 	public String hello() {
 		return adminService.makeFirstUser();
-		
 	}
 	@GetMapping("/test")
 	public List<User> test(){
@@ -71,7 +70,7 @@ public class AdminController {
 	public ResponseEntity<List<Item>> readDeletedItems(){
 		return adminService.readDeletedItems();
 	}
-	@DeleteMapping("/deletedItems/{id}")
+	@PutMapping("/deletedItems/{id}")
 	public ResponseEntity<HttpStatus> restoreItem(@PathVariable Long id){
 		return adminService.restoreItem(id);
 
@@ -101,7 +100,7 @@ public class AdminController {
 		return adminService.updateUser(holder);
 		
 	}
-	@DeleteMapping("/deletedUsers/{id}")
+	@PutMapping("/deletedUsers/{id}")
 	public ResponseEntity<HttpStatus> restoreUser(@PathVariable Long id){
 		return adminService.restoreUser(id);
 
@@ -136,7 +135,7 @@ public class AdminController {
 		return adminService.readDeletedWarehouses();
 	}
 	
-	@DeleteMapping("/deletedWarehouses/{id}")
+	@PutMapping("/deletedWarehouses/{id}")
 	public ResponseEntity<HttpStatus> restoreWarehouse(@PathVariable Long id){
 		return adminService.restoreWarehouse(id);
 	}

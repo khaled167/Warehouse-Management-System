@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.sql.Date;
 import java.util.List;
 
+import org.aspectj.lang.annotation.RequiredTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +31,13 @@ import com.example.demo.repository.WarehouseRepository;
 import com.example.demo.service.DeanService;
 import com.example.demo.service.FWKeeperService;
 
+import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/dean/{deanid}")
 @CrossOrigin("http://localhost:3000")
-
+@RequiredArgsConstructor
 public class DeanController {
 	@Autowired private RefundRepository refRep;
 	@Autowired private TransactionRepository transRep;
@@ -46,6 +49,11 @@ public class DeanController {
 	@Autowired private SignatureRepository signRep;
 	@Autowired private DeanService deanServ;
 	@Autowired private WarehouseRepository whRep;
+	
+	@GetMapping("/test")
+	public List<Warehouse> test(){
+		return whRep.findAll();
+	}
 	
 	@GetMapping("/{act_type}")
 	public List<Action> getAction(@PathVariable("act_type") String type){

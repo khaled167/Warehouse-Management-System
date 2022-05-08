@@ -3,6 +3,13 @@ package com.example.demo.service;
 import java.sql.Date;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +38,7 @@ public class AdminService {
 	@Autowired private RoleRepository rRepo;
 	@Autowired private AdminActionRepository adRepo;
 	@Autowired private AdminEditDetailsRepository adeRepo;
-	
+	@Autowired EntityManager em;
 	public String makeFirstUser(){
         long millis=System.currentTimeMillis();  
 		User admin =new User("احمد محمد","احمد999","20405060","109 شارع","0124599","ahmed@example.com",new Date(millis),0,true,"28888");
@@ -42,7 +49,16 @@ public class AdminService {
 		return "done";
 	}
 	public ResponseEntity<List<Item>> readItems(){
-		return new ResponseEntity<List<Item>>(iRepo.findAllActiveItems(),HttpStatus.OK);
+		
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Item> cq = cb.createQuery(Item.class);
+        Root<Item> item = cq.from(Item.class);
+        Predicate isActive = cb.equal(item.get("is_available"), true);
+        cq.where(isActive);
+        TypedQuery<Item> query = em.createQuery(cq);
+        return new ResponseEntity<List<Item>>(query.getResultList(),HttpStatus.OK);
+		
+//		return new ResponseEntity<List<Item>>(iRepo.findAllActiveItems(),HttpStatus.OK);
 	}
 	public ResponseEntity<Item> createItem(Item item){
         long millis=System.currentTimeMillis();  
@@ -115,8 +131,6 @@ public class AdminService {
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
-
-	
 	public ResponseEntity<List<User>> readUsers(){
 		return new ResponseEntity<List<User>>(uRepo.findAll(),HttpStatus.OK);
 	}
@@ -204,8 +218,6 @@ public class AdminService {
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
-
-	
 	public ResponseEntity<List<Warehouse>> readWarehouses(){
 		
 		return new ResponseEntity<List<Warehouse>>(wRepo.findAllActiveWarehouse(),HttpStatus.OK);
@@ -283,7 +295,6 @@ public class AdminService {
 	
 	return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 }
-
 	public ResponseEntity<List<Role>> readUsersRoles(){
 		return new ResponseEntity<List<Role>>(rRepo.findAllActiveUser(),HttpStatus.OK);
 	}
