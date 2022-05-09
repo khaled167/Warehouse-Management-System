@@ -9,6 +9,6 @@ import com.example.demo.entity.AdminEditDetails;
 
 public interface AdminEditDetailsRepository extends JpaRepository<AdminEditDetails, Long> {
 	 @Query(value="SELECT * FROM admin_edit_details a WHERE a.admin_action_id in "
-	 		+ "(SELECT admin_action_id from admin_actions where action_on_id = ?1 && action_entity = ?2)", nativeQuery = true)
+	 		+ "(SELECT admin_action_id from admin_actions where action_on_id = ?1 and action_entity = ?2)", nativeQuery = true)
 		List<AdminEditDetails> getEditHistory(long id,String entity);
 }

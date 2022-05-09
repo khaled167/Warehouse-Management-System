@@ -49,7 +49,7 @@ public class DeanService {
 		
 		for(Transaction t : inp) {
 			Stock st = t.getStock();
-			Stock depSt = stRep.getStock(st.getItem().getItem_id(),st.getEntry_date(),st.getExpired_date(), st.getPrice(), st.getStatus(),to);
+			Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),input.getWarehouse());
 			if( depSt != null) 
 				depSt.setQuantity(depSt.getQuantity() + Math.min(t.getStock().getQuantity()   ,  t.getQuantity()) );
 			

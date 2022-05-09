@@ -23,6 +23,7 @@ import com.example.demo.repository.ExaminationMemberRepository;
 import com.example.demo.repository.ExaminationMemberSignatureRepository;
 import com.example.demo.repository.ExaminationRepository;
 import com.example.demo.repository.RefundRepository;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.SignatureRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
@@ -43,7 +44,8 @@ public class FWKeeperService {
 	@Autowired private ExaminationMemberSignatureRepository emsRep;
 	@Autowired private WarehouseRepository whRep;
 	@Autowired private StockRepository stRep;
-	
+	@Autowired private RoleRepository roleRep;
+
 	public String makeTransaction(Pair<Transaction> input,long uid) {
 		Date date = new Date(System.currentTimeMillis());
 		Action act = new Action("طلب تحويل",input.notes,date);
@@ -58,7 +60,7 @@ public class FWKeeperService {
 		long depWH = whRep.getWarehouse(t.getRequest().getAction().getAction_id());
 		System.out.println("depWH: "+depWH);
 		Stock st = t.getStock();
-		Stock depSt = stRep.getStock(st.getItem().getItem_id(),st.getEntry_date(),st.getExpired_date(), st.getPrice(), st.getStatus(),depWH);
+		Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(depWH).get());
 		if( depSt != null) {
 //			if(depSt.getWarehouse().getWarehouse_id() != st.getWarehouse().getWarehouse_id()) {
 			System.out.println("depSt is NOT NULL");
@@ -91,7 +93,7 @@ public class FWKeeperService {
 		return "DONE";
 	}
 	public List<Action> getActions(String type){
-		return actRep.getAllActions(type);
+		return actRep.findByActionTypeOrderByActionDateDesc(type);
 	}
 
 	public String makeExamine(ExaminationParam param, long uid) {
@@ -112,11 +114,11 @@ public class FWKeeperService {
 			param.getEc().setExamination_type(param.getEx_type());
 		for(Examination ex : param.getList()) {
 			Stock st = ex.getStock();
-			st.setEntry_date(date);
-			st.setWarehouse(whRep.findById(whRep.getWarehouseIdByUserId(uid)).get());
+			st.setEntryDate(date);
+			st.setWarehouse(roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse());
 			if(ex.isIs_accepted()) {
 				// TEMPORARY FACULTY WAREHOUSE = 1 (WHEN LOGGING IN)
-				Stock facSt = stRep.getStock(st.getItem().getItem_id(),st.getEntry_date(),st.getExpired_date(), st.getPrice(), st.getStatus(),1);
+				Stock facSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(1l).get());
 				if(facSt != null) {
 					facSt.setQuantity(facSt.getQuantity() + st.getQuantity());
 					st.clone(facSt);
@@ -130,10 +132,10 @@ public class FWKeeperService {
 		else {
 			long aid = param.getEc().getAction().getAction_id();
 			long depWH = whRep.getWarehouse(aid);
-			List<Refund> ref =  refRep.getAllRefundDetails(aid);
+			List<Refund> ref =  refRep.findByAction(actRep.findById(aid).get());
 			for(Refund r : ref) {
 				Stock st = r.getTransaction().getStock();
-				Stock depSt = stRep.getStock(st.getItem().getItem_id(),st.getEntry_date(),st.getExpired_date(), st.getPrice(), st.getStatus(),depWH);
+				Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(depWH).get());
 				st.setQuantity(st.getQuantity() + r.getRefund_quantity());
 				depSt.setQuantity(depSt.getQuantity() - r.getRefund_quantity());
 				stRep.saveAll(Arrays.asList(st,depSt));

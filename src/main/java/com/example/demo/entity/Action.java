@@ -2,11 +2,15 @@ package com.example.demo.entity;
 
 import java.sql.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,12 +23,24 @@ public class Action {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private long action_id;
 
-public Action(String action_type, String action_notes, Date action_date) {
+@Column(name = "action_type")
+@JsonProperty("action_type")
+private String actionType;
+
+@Column(name = "action_notes")
+@JsonProperty("action_notes")
+private String actionNotes;
+
+@Column(name = "action_date")
+@JsonProperty("action_date")
+private Date actionDate;
+
+public Action(String actionType, String actionNotes, Date actionDate) {
 	super();
-	this.action_type = action_type;
-	this.action_notes = action_notes;
-	this.action_date = action_date;
+	this.actionType = actionType;
+	this.actionNotes = actionNotes;
+	this.actionDate = actionDate;
 }
-private String action_type,action_notes;
-private Date action_date;
+
+
 }

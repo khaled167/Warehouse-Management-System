@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import java.sql.Date;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,18 +36,25 @@ public class Role {
 	    private Warehouse warehouse;
 		private double salary;
 		private String role;
-		private Date date_of_assign;
-		private Date date_of_resign;
-		public Role(User user, Warehouse warehouse, double salary, String role, Date date_of_assign,
-				Date date_of_resign) {
+		
+		@Column(name = "date_of_assign")
+		@JsonProperty("date_of_assign")
+		private Date dateOfAssign;
+		
+		@Column(name = "date_of_resign")
+		@JsonProperty("date_of_resign")
+		private Date dateOfResign;
+
+		public Role(User user, Warehouse warehouse, double salary, String role, Date dateOfAssign, Date dateOfResign) {
 			super();
 			this.user = user;
 			this.warehouse = warehouse;
 			this.salary = salary;
 			this.role = role;
-			this.date_of_assign = date_of_assign;
-			this.date_of_resign = date_of_resign;
+			this.dateOfAssign = dateOfAssign;
+			this.dateOfResign = dateOfResign;
 		}
+		
 
 		
 

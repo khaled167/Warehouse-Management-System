@@ -18,6 +18,7 @@ import com.example.demo.entity.Request;
 import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
 import com.example.demo.repository.ItemRepository;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.DepartmentMemberService;
 
@@ -30,9 +31,12 @@ public class DepartmentMemberController {
 	@Autowired private DepartmentMemberService dms;
 	@Autowired private UserRepository userRep;
 	@Autowired private ItemRepository itemRep;
+	@Autowired private RoleRepository roleRep;
+
+	
 	@GetMapping("/requests")
 	public List<Action> getRequestActions(@PathVariable("userId") long uid) {
-		return dms.getActionType("طلب اضافة", userRep.getWarehouseId(uid));
+		return dms.getActionType("طلب اضافة", roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse().getWarehouse_id());
 	}
 	
 	@GetMapping("/requests/{reqid}")
@@ -52,12 +56,12 @@ public class DepartmentMemberController {
 	
 	@GetMapping("/refunds")
 	public List<Action> getRefundActions(@PathVariable("userId") long uid) {
-		return dms.getActionType("طلب استرجاع", userRep.getWarehouseId(uid));
+		return dms.getActionType("طلب استرجاع", roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse().getWarehouse_id());
 	}
 
 	@GetMapping("/deprives")
 	public List<Action> getDepriveActions(@PathVariable("userId") long uid) {
-		return dms.getActionType("طلب جرد", userRep.getWarehouseId(uid));
+		return dms.getActionType("طلب جرد", roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse().getWarehouse_id());
 
 	}
 
@@ -80,18 +84,18 @@ public class DepartmentMemberController {
 
 	@GetMapping("/stocks")
 	public List<Stock> getStocks(@PathVariable("userId") long uid) {
-		long id = userRep.getWarehouseId(uid);
+		long id = roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse().getWarehouse_id();
 		System.out.println(id);
 		return dms.getAllStocks(id);
 	}
 
 	@GetMapping("/transactions")
 	public List<Action> getTransactions(@PathVariable("userId") long uid) {
-		return dms.getActionType("طلب تحويل", userRep.getWarehouseId(uid));
+		return dms.getActionType("طلب تحويل", roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse().getWarehouse_id());
 	}
 	
 	@GetMapping("/items")
 	public List<Item> getItems(){
-		return itemRep.findAllActiveItems();
+		return itemRep.findByIsAvailable(true);
 	}
 }

@@ -17,11 +17,14 @@ import com.example.demo.entity.Refund;
 import com.example.demo.entity.Request;
 import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
+import com.example.demo.repository.ActionRepository;
+import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.RefundRepository;
 import com.example.demo.repository.RequestRepository;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
-import com.example.demo.repository.WarehouseRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.FWKeeperService;
 
 @RestController
@@ -34,8 +37,13 @@ public class FWKeeperController {
 	@Autowired private RequestRepository reqRep;
 	@Autowired private RefundRepository refRep;
 	@Autowired private TransactionRepository transRep;
-	@Autowired private WarehouseRepository whRep;
 	@Autowired private StockRepository stRep;
+	@Autowired private ActionRepository actRep;
+	@Autowired private UserRepository userRep;
+	@Autowired private RoleRepository roleRep;
+	@Autowired private ItemRepository itRep;
+
+	
 	
 	@GetMapping("/{act_type}")
 	public List<Action> getAction(@PathVariable("act_type") String type){
@@ -50,17 +58,17 @@ public class FWKeeperController {
 	
 	@GetMapping("/requests/{act_id}")
 	public List<Request> getAllRequest(@PathVariable("act_id") long aid){
-		return reqRep.getAllRequestDetails(aid);
+		return reqRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@GetMapping("/refunds/{act_id}")
 	public List<Refund> getAllRefund(@PathVariable("act_id") long aid){
-		return refRep.getAllRefundDetails(aid);
+		return refRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@GetMapping("/transactions/{act_id}")
 	public List<Transaction> getAllTransaction(@PathVariable("act_id") long aid){
-		return transRep.getAllTransactionDetails(aid);
+		return transRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@PostMapping("/maketransactions")
@@ -74,6 +82,6 @@ public class FWKeeperController {
 	}
 	@GetMapping("/getitemstock/{itid}")
 	public List<Stock> getItemStocks(@PathVariable("itid")long itid,@PathVariable("fwkid")long fwid){
-		return stRep.getItemStocks(itid, whRep.getWarehouseIdByUserId(fwid));
+		return stRep.findByItemAndWarehouseAndStatus(itRep.findById(itid).get(), roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(fwid).get()).getWarehouse(),"مقبول");
 	}
 }

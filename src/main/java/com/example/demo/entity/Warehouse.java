@@ -2,11 +2,14 @@ package com.example.demo.entity;
 
 import java.sql.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,25 +23,43 @@ public class Warehouse {
 	  @Id
 	  @GeneratedValue(strategy=GenerationType.IDENTITY)
 		private long warehouse_id;
-		private String warehouse_name,location,phone_number,warehouse_type,description;
-		private Date establishment_time;
-		private boolean is_available;
-		public boolean isIs_available() {
-			return is_available;
-		}
-		public void setIs_available(boolean is_available) {
-			this.is_available = is_available;
-		}
-		public Warehouse(String warehouse_name, String location, String phone_number, String warehouse_type,
-				String description, Date establishment_time, boolean is_available) {
+	  
+		@Column(name = "warehouse_name")
+		@JsonProperty("warehouse_name")
+		private String warehouseName;
+		
+		private String location;
+		
+		@Column(name = "phone_number")
+		@JsonProperty("phone_number")
+		private String phoneNumber;
+		
+		@Column(name = "warehouse_type")
+		@JsonProperty("warehouse_type")
+		private String warehouseType;
+		
+		private String description;
+		
+		@Column(name = "establishment_time")
+		@JsonProperty("establishment_time")
+		private Date establishmentTime;
+		
+		@Column(name = "is_available")
+		@JsonProperty("is_available")
+		private boolean isAvailable;
+
+		public Warehouse(String warehouseName, String location, String phoneNumber, String warehouseType,
+				String description, Date establishmentTime, boolean isAvailable) {
 			super();
-			this.warehouse_name = warehouse_name;
+			this.warehouseName = warehouseName;
 			this.location = location;
-			this.phone_number = phone_number;
-			this.warehouse_type = warehouse_type;
+			this.phoneNumber = phoneNumber;
+			this.warehouseType = warehouseType;
 			this.description = description;
-			this.establishment_time = establishment_time;
-			this.is_available = is_available;
+			this.establishmentTime = establishmentTime;
+			this.isAvailable = isAvailable;
 		}
+
+
 		
 }

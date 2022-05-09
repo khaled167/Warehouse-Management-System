@@ -20,6 +20,7 @@ import com.example.demo.repository.SignatureRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WarehouseRepository;
 
 @Service
 public class DepartmentMemberService {
@@ -33,6 +34,8 @@ public class DepartmentMemberService {
 	@Autowired private UserRepository userRep;
 	@Autowired private SignatureRepository signRep;
 	@Autowired private StockRepository stockRep;
+	@Autowired private WarehouseRepository whRep;
+
 	public List<Action> getActionType(String actionType,long warehouseId){
 		return actRep.getActionType(actionType,warehouseId);
 	}
@@ -64,19 +67,19 @@ public class DepartmentMemberService {
 	}
 	
 	public List<Stock> getAllStocks(long warehouseId){
-		return stockRep.getAllStocks(warehouseId);
+		return stockRep.findByWarehouse(whRep.findById(warehouseId).get());
 	}
 
 	public List<Request> getRequestDetails(long aid) {
-		return reqRep.getAllRequestDetails(aid);
+		return reqRep.findByAction(actRep.findById(aid).get());
 	}
 
 	public List<Refund> getRefundDetails(long aid) {
-		return refRep.getAllRefundDetails(aid);
+		return refRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	public List<Transaction> getTransactionDetails(long aid) {
-		return transRep.getAllTransactionDetails(aid);
+		return transRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	

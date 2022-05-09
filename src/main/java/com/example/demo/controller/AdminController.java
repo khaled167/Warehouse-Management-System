@@ -41,7 +41,7 @@ public class AdminController {
 	}
 	@GetMapping("/test")
 	public List<User> test(){
-		return userRep.findaus();
+		return userRep.findByIsAvailable(true);
 	}
 	@GetMapping("/items")
 	public ResponseEntity<List<Item>> readItems(){
@@ -169,7 +169,7 @@ public class AdminController {
 	}
 	@GetMapping("/dets")
 	public List<Long> getDets(){
-		return Arrays.asList(whRep.countAllActiveWarehouse(),itemRep.countAllActiveItems(),userRep.countAllActiveUser());
+		return Arrays.asList((long)whRep.findByIsAvailable(true).size(),(long)itemRep.findByIsAvailable(true).size(),(long)userRep.findByIsAvailable(true).size());
 	}
 	
 	}

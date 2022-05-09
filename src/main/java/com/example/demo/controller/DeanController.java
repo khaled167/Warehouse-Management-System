@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.sql.Date;
 import java.util.List;
 
-import org.aspectj.lang.annotation.RequiredTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,17 +69,17 @@ public class DeanController {
 	
 	@GetMapping("/requests/{act_id}")
 	public List<Request> getAllRequest(@PathVariable("act_id") long aid){
-		return reqRep.getAllRequestDetails(aid);
+		return reqRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@GetMapping("/refunds/{act_id}")
 	public List<Refund> getAllRefund(@PathVariable("act_id") long aid){
-		return refRep.getAllRefundDetails(aid);
+		return refRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@GetMapping("/transactions/{act_id}")
 	public List<Transaction> getAllTransaction(@PathVariable("act_id") long aid){
-		return transRep.getAllTransactionDetails(aid);
+		return transRep.findByAction(actRep.findById(aid).get());
 	}
 	
 	@PostMapping("/maketransactions")
@@ -98,19 +97,7 @@ public class DeanController {
 	public List<Action> getSpecificAction(@PathVariable("warehouseid") long whid,@PathVariable("actiontype")String type){
 		return actRep.getActionType(type, whid);
 	}
-	@RequestMapping("/{warehouseid}/actions/requests/{reqid}")
-	public List<Request> getRequestDetails(@PathVariable("reqid")long aid){
-		return reqRep.getAllRequestDetails(aid);
-	}
 	
-	@RequestMapping("/{warehouseid}/actions/refunds/{refid}")
-	public List<Refund> getRefundDetails(@PathVariable("reqid")long aid){
-		return refRep.getAllRefundDetails(aid);
-	}
-	@RequestMapping("/{warehouseid}/actions/transactions/{transid}")
-	public List<Transaction> getTransactionDetails(@PathVariable("reqid")long aid){
-		return transRep.getAllTransactionDetails(aid);
-	}
 	@PostMapping("/requests/{actid}")
 	public String setAllowedQuantity(@RequestBody List<Request> list,@PathVariable("actid") long aid,@PathVariable("deanid") long did) {
 		Date date = new Date(System.currentTimeMillis());
