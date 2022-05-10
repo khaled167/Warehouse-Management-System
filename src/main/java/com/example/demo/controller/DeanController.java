@@ -26,6 +26,7 @@ import com.example.demo.repository.RefundRepository;
 import com.example.demo.repository.RequestRepository;
 import com.example.demo.repository.SignatureRepository;
 import com.example.demo.repository.TransactionRepository;
+import com.example.demo.repository.Tuple;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WarehouseRepository;
 import com.example.demo.service.DeanService;
@@ -100,12 +101,12 @@ public class DeanController {
 	}
 	
 	@PostMapping("/requests/{actid}")
-	public String setAllowedQuantity(@RequestBody List<Pair<Long,Integer>> inp,@PathVariable("actid") long aid,@PathVariable("deanid") long did) {
+	public String setAllowedQuantity(@RequestBody List<Tuple> inp,@PathVariable("actid") long aid,@PathVariable("deanid") long did) {
 		
 		List<Request> list = new ArrayList<>(inp.size());
 		for(int i = 0;i<list.size();i++) {
-			list.set(i,reqRep.getById(inp.get(i).getFirst()));
-			list.get(i).setAllowed_quantity(inp.get(i).getSecond());
+			list.set(i,reqRep.getById(inp.get(i).getId()));
+			list.get(i).setAllowed_quantity(inp.get(i).getValue());
 		}
 		Date date = new Date(System.currentTimeMillis());
 		Signature sign = new Signature(actRep.findById(aid).get(),uRep.findById(did).get(),date,date) ;
