@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +37,16 @@ public class DeanService {
 	public String makeTransaction(Holder input, long uid) {
 		System.out.println("DEBUG1: "+input);
 		Date date = new Date(System.currentTimeMillis());
-		Action act = new Action("تحويل طلب من عميد","",date);
+		Action act = new Action("تحويل طلب من عميد",input.getP().getNotes(),date);
 		actRep.save(act);
 		Signature sign = new Signature(act,uRep.findById(uid).get(),date,date);
 		signRep.save(sign);
-		List<Transaction> inp = input.getP().getList();
-		long to = input.getWarehouse().getWarehouse_id();
+		List<Transaction> inp = new ArrayList<>();
+		for(int i=0;i<input.getP().getList().size();i++) {
+			Transaction trans =new Transaction(act,null,stRep.getById(input.getP().getList().get(i).getId()),input.getP().getList().get(i).getValue());
+			inp.add(trans);
+		}
+		long to = input.getWarehouseId();
 		for(Transaction t : inp) 
 			t.setAction(act);
 		
@@ -49,7 +54,7 @@ public class DeanService {
 		
 		for(Transaction t : inp) {
 			Stock st = t.getStock();
-			Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),input.getWarehouse());
+			Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.getById(input.getWarehouseId()));
 			if( depSt != null) 
 				depSt.setQuantity(depSt.getQuantity() + Math.min(t.getStock().getQuantity()   ,  t.getQuantity()) );
 			

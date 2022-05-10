@@ -9,5 +9,5 @@ public class Tuple {
 	@JsonProperty("id")
 	private long id;
 	@JsonProperty("value")
-	private int value;
+	private double value;
 }

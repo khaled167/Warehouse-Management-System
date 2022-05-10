@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Action;
+import com.example.demo.entity.Examination;
 import com.example.demo.entity.ExaminationParam;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
@@ -19,11 +20,13 @@ import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
 import com.example.demo.repository.ActionRepository;
 import com.example.demo.repository.ItemRepository;
+import com.example.demo.repository.Quadra;
 import com.example.demo.repository.RefundRepository;
 import com.example.demo.repository.RequestRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
+import com.example.demo.repository.Triple;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.FWKeeperService;
 
@@ -53,7 +56,9 @@ public class FWKeeperController {
 			return fwkServ.getActions("طلب ارتجاع");
 		if(type.equals("deprives"))
 			return fwkServ.getActions("طلب جرد");
-		return fwkServ.getActions("طلب تحويل");
+		else if(type.equals("transactions"))
+			return fwkServ.getActions("طلب تحويل");
+		else return null;
 	}
 	
 	@GetMapping("/requests/{act_id}")
@@ -72,14 +77,20 @@ public class FWKeeperController {
 	}
 	
 	@PostMapping("/maketransactions")
-	public String makeTransaction(@RequestBody Pair<Transaction> input,@PathVariable("fwkid") long uid) {
+	public String makeTransaction(@RequestBody Pair<Triple> input,@PathVariable("fwkid") long uid) {
 		return fwkServ.makeTransaction(input, uid);
 	}
 	
-	@PostMapping("/examine")
-	public String makeExamine(@RequestBody ExaminationParam param,@PathVariable("fwkid") long uid) {
-		return fwkServ.makeExamine(param,uid);
+	@PostMapping("/itemsexamine")
+	public String makeItemsExamination(@RequestBody ExaminationParam<Examination> param,@PathVariable("fwkid") long uid) {
+		return fwkServ.makeItemsExamination(param,uid);
 	}
+	
+	@PostMapping("/refundsexamine")
+	public String makeRefundsExamination(@RequestBody ExaminationParam<Quadra> param,@PathVariable("fwkid") long uid) {
+		return fwkServ.makeRefundsExamination(param,uid);
+	}
+	
 	@GetMapping("/getitemstock/{itid}")
 	public List<Stock> getItemStocks(@PathVariable("itid")long itid,@PathVariable("fwkid")long fwid){
 		return stRep.findByItemAndWarehouseAndStatus(itRep.findById(itid).get(), roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(fwid).get()).getWarehouse(),"مقبول");

@@ -28,4 +28,17 @@ private Action action;
 private Item item;
 private String exchange_reason,notes;
 private double allowed_quantity,requested_quantity;
+public Request(Action action, Item item, String exchange_reason, String notes, double allowed_quantity,
+		double requested_quantity) {
+	super();
+	this.action = action;
+	this.item = item;
+	this.exchange_reason = exchange_reason;
+	this.notes = notes;
+	this.allowed_quantity = allowed_quantity;
+	this.requested_quantity = requested_quantity;
+}
+
+
+
 }

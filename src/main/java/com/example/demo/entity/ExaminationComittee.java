@@ -27,6 +27,6 @@ private long examination_comittee_id;
 private Action action;
 private int decision_number,supply_number;
 private Date supply_date;
-private String examination_type,head_name;
+private String head_name;
 
 }

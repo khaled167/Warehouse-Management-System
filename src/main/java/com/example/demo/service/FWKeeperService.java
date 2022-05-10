@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import com.example.demo.entity.ExaminationMemberSignature;
 import com.example.demo.entity.ExaminationParam;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
+import com.example.demo.entity.RefundExamination;
 import com.example.demo.entity.Signature;
 import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
@@ -22,11 +24,15 @@ import com.example.demo.repository.ExaminationComitteeRepository;
 import com.example.demo.repository.ExaminationMemberRepository;
 import com.example.demo.repository.ExaminationMemberSignatureRepository;
 import com.example.demo.repository.ExaminationRepository;
+import com.example.demo.repository.Quadra;
+import com.example.demo.repository.RefundExaminationRepository;
 import com.example.demo.repository.RefundRepository;
+import com.example.demo.repository.RequestRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.SignatureRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
+import com.example.demo.repository.Triple;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WarehouseRepository;
 
@@ -45,49 +51,43 @@ public class FWKeeperService {
 	@Autowired private WarehouseRepository whRep;
 	@Autowired private StockRepository stRep;
 	@Autowired private RoleRepository roleRep;
+	@Autowired private RequestRepository reqRep;
+	@Autowired private RefundExaminationRepository reRep;
 
-	public String makeTransaction(Pair<Transaction> input,long uid) {
+	
+	public String makeTransaction(Pair<Triple> input,long uid) {
+		List<Transaction> list = new ArrayList<>();
+
 		Date date = new Date(System.currentTimeMillis());
 		Action act = new Action("طلب تحويل",input.notes,date);
 		// SEEN DATE MUST BE ADJUSTED
 		Signature sign = new Signature(act,userRep.findById(uid).get(),date,date);
 		signRep.save(sign);
-		System.out.println("Trans: "+input.list);
-		for(Transaction trans : input.list)
-			trans.setAction(act);
 		actRep.save(act);
-		for(Transaction t : input.getList()) {
+		for(int i = 0;i<input.list.size();i++) {
+			Transaction t = new Transaction(act , reqRep.getById(input.list.get(i).getRid()),stRep.getById(input.list.get(i).getSid()),input.list.get(i).getQuantity());
+			list.add(t);
+		}
+	
+		for(Transaction t : list) {
 		long depWH = whRep.getWarehouse(t.getRequest().getAction().getAction_id());
 		System.out.println("depWH: "+depWH);
 		Stock st = t.getStock();
 		Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(depWH).get());
-		if( depSt != null) {
-//			if(depSt.getWarehouse().getWarehouse_id() != st.getWarehouse().getWarehouse_id()) {
-			System.out.println("depSt is NOT NULL");
-			System.out.println("Dep Stock: "+depSt);
-			System.out.println("St: "+st);
-			System.out.println("Before Dep Stock Quant: "+depSt.getQuantity());
-			depSt.setQuantity(depSt.getQuantity() + Math.min(t.getStock().getQuantity()   ,  t.getQuantity()) );
-			System.out.println("After Dep Stock Quant: "+depSt.getQuantity());
-//			}
-		}
-		
+		if( depSt != null) 
+			depSt.setQuantity(depSt.getQuantity() + Math.min(t.getStock().getQuantity(), t.getQuantity()) );
 		
 		else {
-			System.out.println("depSt is NULL");
 			depSt = new Stock();
 			depSt.clone(st);
 			depSt.setWarehouse(whRep.findById(depWH).get());
 			depSt.setQuantity(Math.min(t.getStock().getQuantity()  ,  t.getQuantity()));
-			System.out.println("Dep Quant: "+depSt.getQuantity());
 			}
 		t.setQuantity(Math.min(st.getQuantity(), t.getQuantity()));
 		st.setQuantity(Math.max(0, st.getQuantity()-t.getQuantity()));
-		System.out.println("-----------------------------------------------------------");
-		System.out.println("St: "+st);
-		System.out.println("DepSt: "+depSt);
 		transRep.save(t);
 		stRep.saveAll(Arrays.asList(st,depSt));
+		
 		}
 	
 		return "DONE";
@@ -96,27 +96,25 @@ public class FWKeeperService {
 		return actRep.findByActionTypeOrderByActionDateDesc(type);
 	}
 
-	public String makeExamine(ExaminationParam param, long uid) {
+	
+	public String makeItemsExamination(ExaminationParam <Examination> param,long uid) {
 		// TO BE HARD TESTED IN FUTURE
 		Date date = new Date(System.currentTimeMillis());
 		// TO BE TESTED WITH FRON-END
-		Action act = new Action(param.getEx_type(),param.getNotes(),date);
+		Action act = new Action("فحص اصناف جديدة",param.getNotes(),date);
 		actRep.save(act);
 		param.getEc().setAction(act);
 		ecRep.save(param.getEc());
-		
-		
-		for(Examination ex : param.getList())
-			ex.setExaminationComittee(param.getEc());
-		
-		// TO BE TESTED WITH FRONT END
-		if(param.getEx_type().equals("فحص اصناف جديدة")) {
-			param.getEc().setExamination_type(param.getEx_type());
-		for(Examination ex : param.getList()) {
+			List<Examination> list = new ArrayList<>();
+			for(int i = 0 ;i<param.getList().size();i++) {
+				Examination ex = new Examination(param.getEc(),param.getList().get(i).getStock(),param.getList().get(i).getPercentage_examined(),param.getList().get(i).isAccepted(),param.getList().get(i).getNotes());
+				list.add(ex);
+			}
+			for(Examination ex : list) {
 			Stock st = ex.getStock();
 			st.setEntryDate(date);
 			st.setWarehouse(roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()).getWarehouse());
-			if(ex.isIs_accepted()) {
+			if(ex.isAccepted()) {
 				// TEMPORARY FACULTY WAREHOUSE = 1 (WHEN LOGGING IN)
 				Stock facSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(1l).get());
 				if(facSt != null) {
@@ -127,22 +125,47 @@ public class FWKeeperService {
 			else 
 				st.setStatus("مرفوض");
 			stRep.save(st);
+
 		}
-		}
-		else {
-			long aid = param.getEc().getAction().getAction_id();
-			long depWH = whRep.getWarehouse(aid);
-			List<Refund> ref =  refRep.findByAction(actRep.findById(aid).get());
-			for(Refund r : ref) {
-				Stock st = r.getTransaction().getStock();
-				Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(depWH).get());
-				st.setQuantity(st.getQuantity() + r.getRefund_quantity());
-				depSt.setQuantity(depSt.getQuantity() - r.getRefund_quantity());
-				stRep.saveAll(Arrays.asList(st,depSt));
+		eRep.saveAll(list);
+		emRep.saveAll(param.getExmem());
+		
+		for(ExaminationMember exm : param.getExmem()) 
+			emsRep.save(new ExaminationMemberSignature(param.getEc(),exm,date));
+		
+		// SEEN DATE MUST BE ADJUSTED
+		signRep.save(new Signature(act,userRep.findById(uid).get(),date,date));
+		return "DONE";
+
+	}
+	public String makeRefundsExamination(ExaminationParam<Quadra> param, long uid) {
+		// TO BE HARD TESTED IN FUTURE
+		Date date = new Date(System.currentTimeMillis());
+		// TO BE TESTED WITH FRON-END
+		Action act = new Action("فحص اصناف مرتجعة",param.getNotes(),date);
+		actRep.save(act);
+		param.getEc().setAction(act);
+		ecRep.save(param.getEc());
+		
+		// TO BE TESTED WITH FRONT END
+	
+			List<RefundExamination> list = new ArrayList<>();
+			for(int i = 0 ;i<param.getList().size();i++) {
+				RefundExamination ex = new RefundExamination(param.getEc(),refRep.getById(param.getList().get(i).getId()),param.getList().get(i).getPercentage(),param.getList().get(i).isAccepted(),param.getList().get(i).getNotes());
+				list.add(ex);
 			}
-			
-		}
-		eRep.saveAll(param.getList());
+			for(RefundExamination re : list) {
+				if(re.isAccepted()) {
+					Refund r = re.getRefund();
+					long depWH = whRep.getWarehouse(r.getAction().getAction_id());
+					Stock st = r.getTransaction().getStock();
+					Stock depSt = stRep.findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse(st.getItem(),st.getEntryDate(),st.getExpiredDate(), st.getPrice(), st.getStatus(),whRep.findById(depWH).get());
+					st.setQuantity(st.getQuantity() + r.getRefund_quantity());
+					depSt.setQuantity(depSt.getQuantity() - r.getRefund_quantity());
+					stRep.saveAll(Arrays.asList(st,depSt));
+				}
+			}
+		reRep.saveAll(list);
 		emRep.saveAll(param.getExmem());
 		
 		for(ExaminationMember exm : param.getExmem()) 

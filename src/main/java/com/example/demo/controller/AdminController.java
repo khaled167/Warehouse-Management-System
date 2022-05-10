@@ -20,7 +20,7 @@ import com.example.demo.entity.Item;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Warehouse;
-import com.example.demo.repository.Holder;
+import com.example.demo.repository.EditHolder;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WarehouseRepository;
@@ -62,7 +62,7 @@ public class AdminController {
 
 	}
 	@PutMapping("/items")
-	public ResponseEntity<Item> updateItem(@RequestBody Holder holder){
+	public ResponseEntity<Item> updateItem(@RequestBody EditHolder holder){
 		return adminService.updateItem(holder);
 
 	}
@@ -96,7 +96,7 @@ public class AdminController {
 
 	}
 	@PutMapping("/users")
-	public ResponseEntity<User> updateUser(@RequestBody Holder holder){
+	public ResponseEntity<User> updateUser(@RequestBody EditHolder holder){
 		return adminService.updateUser(holder);
 		
 	}
@@ -126,7 +126,7 @@ public class AdminController {
 		return adminService.deleteWarehouse(id);
 	}
 	@PutMapping("/warehouses")
-	public ResponseEntity<Warehouse> updateWarehouse(@RequestBody Holder holder ){
+	public ResponseEntity<Warehouse> updateWarehouse(@RequestBody EditHolder holder ){
 		return adminService.updateWarehouse(holder);
 		
 	}
@@ -155,7 +155,7 @@ public class AdminController {
 	}
 	
 	@PutMapping("/roles")
-	public ResponseEntity<Role> updatRoleUser(@RequestBody Holder holder){
+	public ResponseEntity<Role> updatRoleUser(@RequestBody EditHolder holder){
 		return adminService.updatRoleUser(holder);	
 	}
 	

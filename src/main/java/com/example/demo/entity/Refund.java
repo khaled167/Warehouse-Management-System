@@ -27,4 +27,13 @@ private Action action;
 @JoinColumn(name="transaction_id")
 private Transaction Transaction;
 private double refund_quantity;
+public Refund(Action action, com.example.demo.entity.Transaction transaction, double refund_quantity) {
+	super();
+	this.action = action;
+	Transaction = transaction;
+	this.refund_quantity = refund_quantity;
+}
+
+
+
 }

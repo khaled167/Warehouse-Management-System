@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,13 +31,23 @@ private ExaminationComittee examinationComittee;
 @JoinColumn(name="stock_id")
 private Stock stock;
 private String notes;
-private boolean is_accepted;
+
+@Column(name = "is_accepted")
+@JsonProperty("is_accepted")
+private boolean isAccepted;
+
 private double percentage_examined;
-public boolean isIs_accepted() {
-	return is_accepted ;
+
+public Examination(ExaminationComittee examinationComittee, Stock stock,double percentage_examined, boolean isAccepted
+		, String notes) {
+	super();
+	this.examinationComittee = examinationComittee;
+	this.stock = stock;
+	this.notes = notes;
+	this.isAccepted = isAccepted;
+	this.percentage_examined = percentage_examined;
 }
-public void setIs_accepted(boolean is_accepted) {
-	this.is_accepted = is_accepted;
-}
+
+
 
 }

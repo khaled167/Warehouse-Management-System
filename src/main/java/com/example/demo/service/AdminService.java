@@ -24,14 +24,16 @@ import com.example.demo.entity.User;
 import com.example.demo.entity.Warehouse;
 import com.example.demo.repository.AdminActionRepository;
 import com.example.demo.repository.AdminEditDetailsRepository;
-import com.example.demo.repository.Holder;
+import com.example.demo.repository.EditHolder;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WarehouseRepository;
+
 @Component
 @Service
 public class AdminService {
+
 	@Autowired private ItemRepository iRepo;
 	@Autowired private UserRepository uRepo;
 	@Autowired private WarehouseRepository wRepo;
@@ -47,20 +49,11 @@ public class AdminService {
 		wRepo.save(ware);
 		rRepo.save(new Role(admin,ware,1500,"ادمن",new Date(millis),new Date(millis)));
 		
-		
-		
+	
 		return "done";
 	}
 	public ResponseEntity<List<Item>> readItems(){
-		
-//		  CriteriaBuilder cb = em.getCriteriaBuilder();
-//        CriteriaQuery<Item> cq = cb.createQuery(Item.class);
-//        Root<Item> item = cq.from(Item.class);
-//        Predicate isActive = cb.equal(item.get("is_available"), true);
-//        cq.where(isActive);
-//        TypedQuery<Item> query = em.createQuery(cq);
         return new ResponseEntity<List<Item>>(iRepo.findByIsAvailable(true),HttpStatus.OK);
-//        return new ResponseEntity<List<Item>>(query.getResultList(),HttpStatus.OK);
 	}
 	public ResponseEntity<Item> createItem(Item item){
         long millis=System.currentTimeMillis();  
@@ -86,7 +79,7 @@ public class AdminService {
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
-	public ResponseEntity<Item> updateItem(Holder holder){
+	public ResponseEntity<Item> updateItem(EditHolder holder){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);
 			User admin=uRepo.findById((long) 1).get();
@@ -164,7 +157,7 @@ public class AdminService {
 		adRepo.save(adminAction);
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
-	public ResponseEntity<User> updateUser(Holder holder){
+	public ResponseEntity<User> updateUser(EditHolder holder){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);	
 			User admin=uRepo.findById((long) 1).get();
@@ -249,7 +242,7 @@ public class AdminService {
 		
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
-	public ResponseEntity<Warehouse> updateWarehouse(Holder holder ){
+	public ResponseEntity<Warehouse> updateWarehouse(EditHolder holder ){
 		 long millis=System.currentTimeMillis();  
 			Date date = new Date(millis);
 			User admin=uRepo.findById((long) 1).get();
@@ -313,7 +306,7 @@ public class AdminService {
 	public ResponseEntity<Role> readRole(Long id){
 		return new ResponseEntity<Role>(rRepo.findById(id).get(),HttpStatus.OK);
 	}
-	public ResponseEntity<Role> updatRoleUser(Holder holder){
+	public ResponseEntity<Role> updatRoleUser(EditHolder holder){
 	    Role role=rRepo.findById(holder.getId()).get();
 		if(holder.getEditType().equals("الدور")) {
 			role.setRole(holder.getNewValue());

@@ -18,7 +18,9 @@ import com.example.demo.entity.Request;
 import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
 import com.example.demo.repository.ItemRepository;
+import com.example.demo.repository.RequestHolder;
 import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.Tuple;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.DepartmentMemberService;
 
@@ -66,12 +68,12 @@ public class DepartmentMemberController {
 	}
 
 	@PostMapping("/makerequest")
-	public String makeRequestActions(@RequestBody Pair<Request> input,@PathVariable("userId")long uid) {
+	public String makeRequestActions(@RequestBody Pair<RequestHolder> input,@PathVariable("userId")long uid) {
 		return dms.makeRequestAction(input,uid);
 	}
 
 	@PostMapping("/refunds")
-	public String makeRefundActions(@RequestBody Pair<Refund> input,@PathVariable("userId")long uid) {
+	public String makeRefundActions(@RequestBody Pair<Tuple> input,@PathVariable("userId")long uid) {
 		dms.makeRefundAction(input,uid);
 		return "DONE";
 	}

@@ -31,5 +31,13 @@ public class Transaction {
 	@JoinColumn(name="stock_id")
 	private Stock stock;
 	private double quantity;
+	public Transaction(Action action, Request request, Stock stock, double quantity) {
+		super();
+		this.action = action;
+		this.request = request;
+		this.stock = stock;
+		this.quantity = quantity;
+	}
+	
 
 }
