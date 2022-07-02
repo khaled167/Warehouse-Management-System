@@ -10,5 +10,11 @@ public interface RequestRepository extends JpaRepository<Request,Long>{
 	
 	List<Request> findByAction(Action action);
 	
+	
+	List<Request> findByItemCategory(String itemCategory);
+	
+	List<Request> findByActionAndItemCategory(Action action,String category);
+	
+	
 }
 

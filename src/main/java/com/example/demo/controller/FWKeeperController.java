@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,64 +12,106 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Action;
+import com.example.demo.entity.ActionHolder;
 import com.example.demo.entity.Examination;
+import com.example.demo.entity.ExaminationCommittee;
+import com.example.demo.entity.ExaminationMemberSignature;
 import com.example.demo.entity.ExaminationParam;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
+import com.example.demo.entity.RefundExamination;
 import com.example.demo.entity.Request;
+import com.example.demo.entity.Signature;
 import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
+import com.example.demo.query.Criteria;
 import com.example.demo.repository.ActionRepository;
+import com.example.demo.repository.ExaminationCommitteeRepository;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.Quadra;
-import com.example.demo.repository.RefundRepository;
-import com.example.demo.repository.RequestRepository;
 import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.SignatureRepository;
 import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
 import com.example.demo.repository.Triple;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.DepartmentMemberService;
 import com.example.demo.service.FWKeeperService;
 
 @RestController
 @RequestMapping("fwk/{fwkid}")
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin("http://sciwarehouse.herokuapp.com")
 
 public class FWKeeperController {
 	
 	@Autowired private FWKeeperService fwkServ;
-	@Autowired private RequestRepository reqRep;
-	@Autowired private RefundRepository refRep;
+	@Autowired private DepartmentMemberService dms;
 	@Autowired private TransactionRepository transRep;
 	@Autowired private StockRepository stRep;
 	@Autowired private ActionRepository actRep;
 	@Autowired private UserRepository userRep;
 	@Autowired private RoleRepository roleRep;
-	@Autowired private ItemRepository itRep;
-
+	@Autowired private ItemRepository itRep;	
+	@Autowired private SignatureRepository signRep;
+	@Autowired private ExaminationCommitteeRepository examinationCommitteeRepo;
+	@Autowired private Criteria criteria;
 	
 	
+	
+	@GetMapping("instocks/{stid}")
+	public List<Transaction> inStock(@PathVariable("stid") long stid,@PathVariable("fwkid") long fwkid){
+		return criteria.inStocks(stid, fwkid);
+	}
+	@GetMapping("outstocks/{stid}")
+	public List<Transaction> outStock(@PathVariable("stid") long stid){
+		return criteria.outStocks(stid);
+	}
+	
+	@GetMapping("test/{act_id}")
+	public Signature test(@PathVariable("act_id") long actid) {
+		return signRep.findTopByActionOrderBySubmitDateAsc(actRep.findById(actid).get());
+	}
 	@GetMapping("/{act_type}")
 	public List<Action> getAction(@PathVariable("act_type") String type){
 		if(type.equals("requests"))
 			return fwkServ.getActions("طلب اضافة");
 		if(type.equals("refunds"))
-			return fwkServ.getActions("طلب ارتجاع");
+			return fwkServ.getActions("طلب استرجاع");
 		if(type.equals("deprives"))
 			return fwkServ.getActions("طلب جرد");
-		else if(type.equals("transactions"))
+		if(type.equals("transactions"))
 			return fwkServ.getActions("طلب تحويل");
 		else return null;
 	}
 	
+	@GetMapping("/requestdetails")
+	public List<ActionHolder> findRequestAction(@PathVariable("fwkid") long fwkid) {
+		return fwkServ.findRequestAction(fwkid);		
+	}
+	
+	@GetMapping("/{act_type}/actiondetails")
+	public List<ActionHolder> findAction(@PathVariable("act_type")String type,@PathVariable("fwkid") long fwkid) {
+		if(type.equals("requests"))
+			return fwkServ.findRequestAction(fwkid);
+		if(type.equals("refunds"))
+			return fwkServ.findRefundAction(fwkid);
+		if(type.equals("transactions"))
+			return fwkServ.findTransactionAction(fwkid);
+		else return new ArrayList<>();
+	}
+//	@GetMapping("/doers/{actid}")
+//	public List<Long> doers(@PathVariable long actid){
+//		return fwkServ.doers(actid);
+//	}
+	
 	@GetMapping("/requests/{act_id}")
-	public List<Request> getAllRequest(@PathVariable("act_id") long aid){
-		return reqRep.findByAction(actRep.findById(aid).get());
+	public List<Request> getAllRequest(@PathVariable("act_id") long aid,@PathVariable("fwkid") long fwkid){
+		return fwkServ.findRequestDetails(fwkid, aid);
 	}
 	
 	@GetMapping("/refunds/{act_id}")
-	public List<Refund> getAllRefund(@PathVariable("act_id") long aid){
-		return refRep.findByAction(actRep.findById(aid).get());
+	public List<Refund> getAllRefund(@PathVariable("act_id") long aid,@PathVariable("fwkid") long fwkid){
+		return fwkServ.findRefundDetails(fwkid,aid);
 	}
 	
 	@GetMapping("/transactions/{act_id}")
@@ -78,6 +121,7 @@ public class FWKeeperController {
 	
 	@PostMapping("/maketransactions")
 	public String makeTransaction(@RequestBody Pair<Triple> input,@PathVariable("fwkid") long uid) {
+		System.out.println(input);
 		return fwkServ.makeTransaction(input, uid);
 	}
 	
@@ -94,5 +138,75 @@ public class FWKeeperController {
 	@GetMapping("/getitemstock/{itid}")
 	public List<Stock> getItemStocks(@PathVariable("itid")long itid,@PathVariable("fwkid")long fwid){
 		return stRep.findByItemAndWarehouseAndStatus(itRep.findById(itid).get(), roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(fwid).get()).getWarehouse(),"مقبول");
+	}
+		
+	@PostMapping("/getstocks")
+	public List<Stock> getStocks(@PathVariable("fwkid")long fwid,@RequestBody List<Long> list){
+		return criteria.getStocks(list,fwid);
+	}
+	
+	@GetMapping("getAllStocks")
+	public List<Stock> getAllStocks(@PathVariable("fwkid")long fwid){
+		return fwkServ.getAllStocks(fwid);
+	}
+	
+	@GetMapping("signatures/{act_id}")
+	List<Signature> getSignatures(@PathVariable("act_id") long aid){
+		return signRep.findByAction(actRep.findById(aid).get());
+	}
+	@GetMapping("/stocks")
+	public List<Stock> getStocks(@PathVariable("fwkid") long uid) {
+		return dms.getAllStocks(uid);
+	}
+	
+//	@GetMapping("getrefundexams/{refid}")
+//	public List<RefundExamination> getRefundExam(@PathVariable("refid") long refid,@PathVariable("fwkid") long fwkid) {
+//		return refexRep.findByRefund(refRep.findById(refid).get());
+//	}
+	
+	@GetMapping("refundexaminations/{refundexamination_id}")
+	public List<RefundExamination> getRefundExaminationDetails(@PathVariable("refundexamination_id")long refexaminationId){
+		return fwkServ.getRefundExaminationDetails(refexaminationId);
+	}
+	
+	@GetMapping("stockexams/{stid}")
+	public List<Examination> getStockExaminations(@PathVariable("stid") long stid) {
+		return criteria.getStockExaminations(stid);
+	}
+	
+	@GetMapping("/examinations")
+	public  List<ExaminationCommittee> getExaminations(@PathVariable("fwkid") long fwkid) {
+//		return fwkServ.getExaminations();
+			List<Action> list = criteria.findWarehouseExaminationActions(roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(fwkid).get()).getWarehouse().getWarehouse_id(),
+					"فحص اصناف جديدة"); 
+			return examinationCommitteeRepo.findByActionIn(list);
+	}
+	
+	@GetMapping("/refundexaminations")
+	public  List<ExaminationCommittee> getRefundExaminations(@PathVariable("fwkid") long fwkid) {
+//		return fwkServ.getExaminations();
+			List<Action> list = criteria.findWarehouseExaminationActions(roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(fwkid).get()).getWarehouse().getWarehouse_id(),
+					"فحص اصناف مرتجعة"); 
+			return examinationCommitteeRepo.findByActionIn(list);
+	}
+	
+	
+	@GetMapping("/examinations/{examination_id}")
+	public  List<Examination> getExaminationDetails(@PathVariable("examination_id")long examinationId) {
+		return fwkServ.getExaminationDetails(examinationId);
+	}
+	@GetMapping("/examinations/{examination_id}/members")
+	public  List<ExaminationMemberSignature> getExaminationMembers(@PathVariable("examination_id")long examinationId) {
+		return fwkServ.getExaminationMembers(examinationId);
+	}
+	
+	@GetMapping("isexamined/{aid}")
+	public Object isExamined(@PathVariable("aid") long aid,@PathVariable("fwkid") long fwkid) {
+		return fwkServ.isExamined(fwkid,aid);
+	}
+	
+	@GetMapping("/transactionhistory/{reqid}")
+	public List<Transaction> findTransactionByRequest(@PathVariable("reqid")long reqid){
+		return criteria.findTransactionsByRequest(reqid);
 	}
 }

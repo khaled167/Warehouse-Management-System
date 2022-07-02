@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.sql.Date;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -22,6 +23,7 @@ import com.example.demo.entity.Item;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.entity.Warehouse;
+import com.example.demo.query.Criteria;
 import com.example.demo.repository.AdminActionRepository;
 import com.example.demo.repository.AdminEditDetailsRepository;
 import com.example.demo.repository.EditHolder;
@@ -40,7 +42,9 @@ public class AdminService {
 	@Autowired private RoleRepository rRepo;
 	@Autowired private AdminActionRepository adRepo;
 	@Autowired private AdminEditDetailsRepository adeRepo;
+	@Autowired private Criteria criteria;
 	@Autowired EntityManager em;
+	
 	public String makeFirstUser(){
         long millis=System.currentTimeMillis();  
 		User admin =new User("احمد محمد","احمد999","20405060","109 شارع","0124599","ahmed@example.com",new Date(millis),0,true,"28888");
@@ -217,7 +221,7 @@ public class AdminService {
 	}
 	public ResponseEntity<List<Warehouse>> readWarehouses(){
 		
-		return new ResponseEntity<List<Warehouse>>(wRepo.findByIsAvailable(true),HttpStatus.OK);
+		return new ResponseEntity<List<Warehouse>>(wRepo.findByIsAvailableAndWarehouseNameNot(true,"لايوجد"),HttpStatus.OK);
 	}
 	public ResponseEntity<Warehouse> createWarehouse(Warehouse warehouse){
 		 long millis=System.currentTimeMillis();  
@@ -279,7 +283,7 @@ public class AdminService {
 		
 	}
 	public ResponseEntity<List<Warehouse>> readDeletedWarehouses(){
-		return new ResponseEntity<List<Warehouse>>(wRepo.findByIsAvailable(false),HttpStatus.OK);
+		return new ResponseEntity<List<Warehouse>>(wRepo.findByIsAvailableAndWarehouseNameNot(false,"لايوجد"),HttpStatus.OK);
 	}
 	public ResponseEntity<HttpStatus> restoreWarehouse(Long id){
 		 long millis=System.currentTimeMillis();  
@@ -293,12 +297,16 @@ public class AdminService {
 	return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 }
 	public ResponseEntity<List<Role>> readUsersRoles(){
-		return new ResponseEntity<List<Role>>(rRepo.findAllActiveUser(),HttpStatus.OK);
+		return new ResponseEntity<List<Role>>(criteria.findAllActiveUser(),HttpStatus.OK);
+//		return new ResponseEntity<List<Role>>(rRepo.findAllActiveUser(),HttpStatus.OK);
 	}
 	public ResponseEntity<Role> creatUeserRole(Role role){
 		if(role.getWarehouse()==null) {
 			role.setWarehouse(wRepo.findById((long) 1).get());
-		}uRepo.save(role.getUser());
+		}
+		if(role.getDateOfAssign() == null)
+			role.setDateOfAssign(new Date(System.currentTimeMillis()));
+		uRepo.save(role.getUser());
 		return new ResponseEntity<Role>(rRepo.save(role),HttpStatus.CREATED);
 		
 		
@@ -317,23 +325,28 @@ public class AdminService {
 		
 	}
 	public ResponseEntity<List<Role>> readDeletedRole(){
-		return new ResponseEntity<List<Role>>(rRepo.findAllDeletedUser(),HttpStatus.OK);
+		return new ResponseEntity<List<Role>>(criteria.findAllDeletedUser(),HttpStatus.OK);
+//		return new ResponseEntity<List<Role>>(rRepo.findAllDeletedUser(),HttpStatus.OK);
 	}
     public ResponseEntity<List<AdminEditDetails>> getEditHistrory(String name,long id){
     	if (name.equals("item")) 
- 
-    		return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"صنف"),HttpStatus.OK);
+    		return new ResponseEntity<List<AdminEditDetails>>(criteria.getEditHistory(id, "صنف"),HttpStatus.OK);
+//    		return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"صنف"),HttpStatus.OK);
 
     	else if( name.equals("warehouse"))
-    		return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"مخزن"),HttpStatus.OK);
+    		return new ResponseEntity<List<AdminEditDetails>>(criteria.getEditHistory(id, "مخزن"),HttpStatus.OK);
+//    		return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"مخزن"),HttpStatus.OK);
 
-    		else
-    			return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"مستخدم"),HttpStatus.OK);
-    	
+    		else if(name.equals("user"))
+        		return new ResponseEntity<List<AdminEditDetails>>(criteria.getEditHistory(id, "مستخدم"),HttpStatus.OK);
+//    			return new ResponseEntity<List<AdminEditDetails>>(adeRepo.getEditHistory(id,"مستخدم"),HttpStatus.OK);
     		
+    		else return new ResponseEntity<List<AdminEditDetails>>(Arrays.asList(),HttpStatus.OK);
     	}
     	
- 
+    public List<Warehouse> findByWarehouseType(String warehouseType){
+    	return wRepo.findByWarehouseType(warehouseType);
+    }
     }
 	
 

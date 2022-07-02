@@ -15,9 +15,7 @@ public interface StockRepository extends JpaRepository<Stock,Long>{
 	List<Stock> findByWarehouse(Warehouse warehouse);
 		
 	List<Stock> findByItemAndWarehouseAndStatus(Item item, Warehouse warehouse,String status);
-		
-	
-	
+			
 	Stock findByItemAndEntryDateAndExpiredDateAndPriceAndStatusAndWarehouse
 					(Item item,Date entryDate,Date expiredDate,double price,String status,Warehouse warehouse);
 	

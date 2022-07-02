@@ -23,11 +23,11 @@ public class AdminEditDetails {
 	private long admin_edit_details_id;
 	@ManyToOne(cascade = {CascadeType.ALL,CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
 	@JoinColumn(name="admin_action_id")
-	private AdminAction AdminAction;
+	private AdminAction adminAction;
 	private String edit_type,old_value;
 	public AdminEditDetails(AdminAction adminAction, String edit_type, String old_value) {
 		super();
-		AdminAction = adminAction;
+		this.adminAction = adminAction;
 		this.edit_type = edit_type;
 		this.old_value = old_value;
 	}

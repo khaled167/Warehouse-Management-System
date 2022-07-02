@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ExaminationParam <T> {
 	private String notes;
-	private ExaminationComittee ec;
+	private ExaminationCommittee ec;
 	private List<T> list;
 	private List<ExaminationMember> exmem;
 	

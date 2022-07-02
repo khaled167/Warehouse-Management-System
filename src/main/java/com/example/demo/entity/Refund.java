@@ -9,6 +9,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Table(name="refunds")
 @Data
 @NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property ="refund_id")
 public class Refund {
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +29,12 @@ private long refund_id;
 private Action action;
 @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
 @JoinColumn(name="transaction_id")
-private Transaction Transaction;
+private Transaction transaction;
 private double refund_quantity;
 public Refund(Action action, com.example.demo.entity.Transaction transaction, double refund_quantity) {
 	super();
 	this.action = action;
-	Transaction = transaction;
+	this.transaction = transaction;
 	this.refund_quantity = refund_quantity;
 }
 

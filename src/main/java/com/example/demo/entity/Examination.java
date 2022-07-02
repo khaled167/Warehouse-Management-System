@@ -25,8 +25,8 @@ public class Examination {
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private long examination_id;
 @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
-@JoinColumn(name="examination_comittee_id")
-private ExaminationComittee examinationComittee;
+@JoinColumn(name="examination_committee_id")
+private ExaminationCommittee examinationCommittee;
 @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
 @JoinColumn(name="stock_id")
 private Stock stock;
@@ -38,10 +38,14 @@ private boolean isAccepted;
 
 private double percentage_examined;
 
-public Examination(ExaminationComittee examinationComittee, Stock stock,double percentage_examined, boolean isAccepted
+@Column(name = "quantity_examined")
+@JsonProperty("quantity_examined")
+private double quantityExamined;
+
+public Examination(ExaminationCommittee examinationCommittee, Stock stock,double percentage_examined, boolean isAccepted
 		, String notes) {
 	super();
-	this.examinationComittee = examinationComittee;
+	this.examinationCommittee = examinationCommittee;
 	this.stock = stock;
 	this.notes = notes;
 	this.isAccepted = isAccepted;

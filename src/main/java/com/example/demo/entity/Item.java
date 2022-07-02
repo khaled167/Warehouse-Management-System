@@ -28,7 +28,6 @@ public class Item {
 	@Column(name = "item_name")
 	@JsonProperty("item_name")
 	private String itemName;
-	
 	private String category;
 
 	private String unit;

@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,8 +32,8 @@ public class User {
 	
 	@Column(name = "email_address")
 	@JsonProperty("email_address")
+	@Email
 	private String emailAddress;
-	
 	@Column(name="date_of_birthday")
 	private Date birthday;
 	@Column(name="number_of_notification")

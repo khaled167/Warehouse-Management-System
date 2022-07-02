@@ -26,8 +26,8 @@ public class RefundExamination {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long refundexamination_id;
 	@ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
-	@JoinColumn(name="examination_comittee_id")
-	private ExaminationComittee examinationComittee;
+	@JoinColumn(name="examination_committee_id")
+	private ExaminationCommittee examinationCommittee;
 	@ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
 	@JoinColumn(name="refund_id")
 	private Refund refund;
@@ -38,10 +38,10 @@ public class RefundExamination {
 	private boolean isAccepted;
 
 	private double percentage_examined;
-	public RefundExamination(ExaminationComittee examinationComittee, Refund refund,double percentage_examined, boolean isAccepted
+	public RefundExamination(ExaminationCommittee examinationCommittee, Refund refund,double percentage_examined, boolean isAccepted
 			, String notes) {
 		super();
-		this.examinationComittee = examinationComittee;
+		this.examinationCommittee = examinationCommittee;
 		this.refund = refund;
 		this.notes = notes;
 		this.isAccepted = isAccepted;

@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -22,18 +24,21 @@ public class Signature {
 @Id
 @GeneratedValue(strategy =GenerationType.IDENTITY)
 private long signature_id; 
-@ManyToOne(cascade = {CascadeType.ALL,CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
+@ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
 @JoinColumn(name="action_id")
 private Action action;
-@ManyToOne(cascade = {CascadeType.ALL,CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
-@JoinColumn(name="user_id")
-private User user;
-public Signature(Action action, User user, Date seen_date, Date submit_date) {
+@ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
+@JoinColumn(name="role_id")
+private Role role;
+public Signature(Action action, Role role, Date seen_date, Date submitDate) {
 	super();
 	this.action = action;
-	this.user = user;
+	this.role = role;
 	this.seen_date = seen_date;
-	this.submit_date = submit_date;
+	this.submitDate = submitDate;
 }
-private Date seen_date,submit_date;
+private Date seen_date;
+@JsonProperty("submit_date")
+private Date submitDate;
 }
+

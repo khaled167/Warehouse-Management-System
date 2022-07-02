@@ -9,5 +9,6 @@ import com.example.demo.entity.Item;
 public interface ItemRepository extends JpaRepository<Item, Long> {
 	
 	List<Item> findByIsAvailable(boolean availability);
+	List<Item> findByCategory(String category);
 	
 }

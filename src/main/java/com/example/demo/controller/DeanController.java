@@ -14,59 +14,67 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Action;
-import com.example.demo.entity.Holder;
+import com.example.demo.entity.ActionHolder;
+import com.example.demo.entity.AdminAction;
+import com.example.demo.entity.AdminEditDetails;
+import com.example.demo.entity.Examination;
+import com.example.demo.entity.ExaminationCommittee;
+import com.example.demo.entity.ExaminationMemberSignature;
+import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
 import com.example.demo.entity.Request;
 import com.example.demo.entity.Signature;
+import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
 import com.example.demo.entity.Warehouse;
+import com.example.demo.query.Criteria;
 import com.example.demo.repository.ActionRepository;
 import com.example.demo.repository.RefundRepository;
 import com.example.demo.repository.RequestRepository;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.SignatureRepository;
+import com.example.demo.repository.StockRepository;
 import com.example.demo.repository.TransactionRepository;
+import com.example.demo.repository.Triple;
 import com.example.demo.repository.Tuple;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.WarehouseRepository;
 import com.example.demo.service.DeanService;
-import com.example.demo.service.FWKeeperService;
-
-import lombok.RequiredArgsConstructor;
+import com.example.demo.service.DepartmentMemberService;
 
 
 @RestController
 @RequestMapping("/dean/{deanid}")
-@CrossOrigin("http://localhost:3000")
-@RequiredArgsConstructor
+@CrossOrigin("http://sciwarehouse.herokuapp.com")
 public class DeanController {
 	@Autowired private RefundRepository refRep;
 	@Autowired private TransactionRepository transRep;
 	@Autowired private RequestRepository reqRep;
-	@Autowired private FWKeeperService fwkServ;
 	@Autowired private DeanService ds;
 	@Autowired private ActionRepository actRep;
-	@Autowired private UserRepository uRep;
+	@Autowired private UserRepository userRep;
+	@Autowired private RoleRepository roleRep;
 	@Autowired private SignatureRepository signRep;
 	@Autowired private DeanService deanServ;
 	@Autowired private WarehouseRepository whRep;
-	
-	@GetMapping("/test")
-	public List<Warehouse> test(){
-		return whRep.findAll();
+	@Autowired private DepartmentMemberService dms;
+	@Autowired private StockRepository stRep;
+	@Autowired private Criteria criteria;
+
+		
+	@GetMapping("instocks/{stid}")
+	public List<Transaction> inStock(@PathVariable("stid") long stid,@PathVariable("deanid") long deanid){
+		return criteria.inStocks(stid, deanid);
+	}
+	@GetMapping("outstocks/{stid}")
+	public List<Transaction> outStock(@PathVariable("stid") long stid){
+		return criteria.outStocks(stid);
+	}
+	@GetMapping("/{act_type}/actiondetails")
+	public List<ActionHolder> findAction(@PathVariable("act_type")String type,@PathVariable("deanid")long deanid) {
+		return deanServ.findAction(type);	
 	}
 	
-	@GetMapping("/{act_type}")
-	public List<Action> getAction(@PathVariable("act_type") String type){
-		if(type.equals("requests"))
-			return fwkServ.getActions("طلب اضافة");
-		if(type.equals("refunds"))
-			return fwkServ.getActions("طلب ارتجاع");
-		if(type.equals("deprives"))
-			return fwkServ.getActions("طلب جرد");
-		if(type.equals("transactions"))
-			return fwkServ.getActions("طلب تحويل");
-		return new ArrayList<>();
-	}
 	
 	@GetMapping("/requests/{act_id}")
 	public List<Request> getAllRequest(@PathVariable("act_id") long aid){
@@ -83,10 +91,17 @@ public class DeanController {
 		return transRep.findByAction(actRep.findById(aid).get());
 	}
 	
-	@PostMapping("/maketransactions")
-	public String makeTransaction(@RequestBody Holder input,@PathVariable("deanid") long uid) {
+//	@PostMapping("/maketransactions")
+//	public String makeTransaction(@RequestBody Holder<Tuple> input,@PathVariable("deanid") long uid) {
+////		return fwkServ.makeTransaction(input, uid);
+//		return deanServ.makeTransaction(input,uid);
+//	}
+	
+	
+	@PostMapping("/maketransaction1")
+	public String makeTransaction1(@RequestBody Pair<Triple> input,@PathVariable("deanid") long uid) {
 //		return fwkServ.makeTransaction(input, uid);
-		return deanServ.makeTransaction(input,uid);
+		return deanServ.makeTransaction1(input,uid);
 	}
 	
 	@RequestMapping("/{warehouseid}/actions")
@@ -96,7 +111,7 @@ public class DeanController {
 	
 	@RequestMapping("/{warehouseid}/actions/{actiontype}")
 	public List<Action> getSpecificAction(@PathVariable("warehouseid") long whid,@PathVariable("actiontype")String type){
-		return actRep.getActionType(type, whid);
+		return dms.getActionType(type, whid);
 	}
 	
 	@PostMapping("/requests")
@@ -109,30 +124,66 @@ public class DeanController {
 		}
 		long aid = list.get(0).getAction().getAction_id();
 		Date date = new Date(System.currentTimeMillis());
-		Signature sign = new Signature(actRep.findById(aid).get(),uRep.findById(did).get(),date,date);
+		Signature sign = new Signature(actRep.findById(aid).get(),roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(did).get()),date,date);
 		signRep.save(sign);
 		reqRep.saveAll(list);
 		return "DONE";
 	}
 	
-	@GetMapping("/stats")
-	public List<List<Integer>> actionPerMonth(){
-		String arr[] = {"طلب اضافة","طلب تحويل","طلب استرجاع","تحويل طلب من عميد","طلب جرد"};
-		List<List<Integer>> ret = new ArrayList<>();
-		for(int i = 0;i<5;i++) ret.add(new ArrayList<Integer>());
-		for(int i = 1;i<=12;i++) {
-			ret.get(0).add(actRep.monthRequests(i,arr[0]));
-			ret.get(1).add(actRep.monthRequests(i,arr[1]));
-			ret.get(2).add(actRep.monthRequests(i,arr[2]));
-			ret.get(3).add(actRep.monthRequests(i,arr[3]));
-			ret.get(4).add(actRep.monthRequests(i,arr[4]));
-		}
-		return ret;
-	}
-	
 	@GetMapping("/warehouse/{act_id}")
 	public  Warehouse getWarehouse(@PathVariable("act_id")long actid) {
-		return whRep.findById(whRep.getWarehouse(actid)).get();
+		return signRep.findTopByActionOrderBySubmitDateAsc(actRep.findById(actid).get()).getRole().getWarehouse();
 	}
-		
+	@GetMapping("signatures/{act_id}")
+	List<Signature> getSignatures(@PathVariable("act_id") long aid){
+		return signRep.findByAction(actRep.findById(aid).get());
+	}
+
+	@GetMapping("/examinations")
+	public  List<ExaminationCommittee> getExaminations() {
+		return deanServ.getExaminations();
+	}
+	
+	@GetMapping("/examinations/{examination_id}")
+	public  List<Examination> getExaminationDetails(@PathVariable("examination_id")long examinationId) {
+		return deanServ.getExaminationDetails(examinationId);
+	}
+	@GetMapping("/examinations/{examination_id}/members")
+	public  List<ExaminationMemberSignature> getExaminationMembers(@PathVariable("examination_id")long examinationId) {
+		return deanServ.getExaminationMembers(examinationId);
+	}
+	@GetMapping("/adminactions")
+	public  List<AdminAction> getAdminActions() {
+		return deanServ.getAdminActions();
+	}
+	@GetMapping("/adminactions/{edit_id}")
+	public  List<AdminEditDetails> getAdminEditHistory(@PathVariable("edit_id")long adminEditActionId) {
+		return deanServ.getAdminEditHistory(adminEditActionId);
+	}
+	
+	@GetMapping("/warehouses")
+	public List<Warehouse> getAllWarehouses(@PathVariable("deanid") long deanid) {
+		return whRep.findByIsAvailableAndWarehouseNameNot(true,"لايوجد");
+	}
+	
+	@GetMapping("warehouses/{whid}")
+	public List<Stock> getAllWarehouseStocks(@PathVariable("deanid") long deanid,@PathVariable("whid")long whid){
+		return stRep.findByWarehouse(whRep.findById(whid).get());
+	}
+	
+	@GetMapping("stock/{stid}")
+	public Stock getStock(@PathVariable("stid") long stid, @PathVariable("deanid") long deanid) {
+		return stRep.findById(stid).get();
+	}
+	
+	
+	@GetMapping("stockexams/{stid}")
+	public List<Examination> getStockExaminations(@PathVariable("stid") long stid) {
+		return criteria.getStockExaminations(stid);
+	}
+	@GetMapping("/transactionhistory/{reqid}")
+	public List<Transaction> findTransactionByRequest(@PathVariable("reqid")long reqid){
+		return criteria.findTransactionsByRequest(reqid);
+	}
+	
 }

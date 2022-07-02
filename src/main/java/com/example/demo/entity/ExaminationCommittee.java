@@ -15,18 +15,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="examination_comittees")
+@Table(name="examination_committees")
 @Data
 @NoArgsConstructor
-public class ExaminationComittee {
+public class ExaminationCommittee {
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-private long examination_comittee_id;
-@ManyToOne(cascade = {CascadeType.ALL,CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REFRESH})
+private long examination_committee_id;
+@ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.REFRESH})
 @JoinColumn(name="action_id")
 private Action action;
 private int decision_number,supply_number;
 private Date supply_date;
 private String head_name;
-
 }

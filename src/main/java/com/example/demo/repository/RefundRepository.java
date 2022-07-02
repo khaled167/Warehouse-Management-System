@@ -11,6 +11,8 @@ import com.example.demo.entity.Refund;
 public interface RefundRepository extends JpaRepository<Refund,Long>{
 		
 	List<Refund> findByAction(Action action);
+	
+	List<Refund> findByActionAndTransactionRequestItemCategory(Action action,String category);
 
 }
 
