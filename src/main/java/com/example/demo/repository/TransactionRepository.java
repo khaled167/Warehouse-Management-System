@@ -22,4 +22,6 @@ public interface TransactionRepository extends JpaRepository<Transaction,Long>{
 	List<Transaction> findByActionAndWarehouse(Action action,Warehouse warehouse);
 	
 	List<Transaction> findByRequest(Request req);
+	
+	List<Transaction> findByStockItem(Item item);
 }

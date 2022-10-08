@@ -37,9 +37,23 @@ public class Item {
 	@Column(name = "is_available")
 	@JsonProperty("is_available")
 	private boolean isAvailable;
+	public Item(String itemName, String category, String unit, String description, boolean isAvailable,
+			boolean isConsumable) {
+		super();
+		this.itemName = itemName;
+		this.category = category;
+		this.unit = unit;
+		this.description = description;
+		this.isAvailable = isAvailable;
+		this.isConsumable = isConsumable;
+	}
 	@Column(name = "is_consumable")
 	@JsonProperty("is_consumable")
 	private boolean isConsumable;
 	
+	
+	private int numberOfTransactions;
+	
+	private double unitDeliveredTime;
 
 }

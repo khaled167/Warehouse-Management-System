@@ -45,7 +45,7 @@ import com.example.demo.service.DepartmentMemberService;
 
 @RestController
 @RequestMapping("/dean/{deanid}")
-@CrossOrigin("http://sciwarehouse.herokuapp.com")
+@CrossOrigin("http://localhost:3000")
 public class DeanController {
 	@Autowired private RefundRepository refRep;
 	@Autowired private TransactionRepository transRep;

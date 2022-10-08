@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +19,7 @@ import com.example.demo.entity.ExaminationCommittee;
 import com.example.demo.entity.ExaminationMember;
 import com.example.demo.entity.ExaminationMemberSignature;
 import com.example.demo.entity.ExaminationParam;
+import com.example.demo.entity.Item;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
 import com.example.demo.entity.RefundExamination;
@@ -31,6 +34,7 @@ import com.example.demo.repository.ExaminationCommitteeRepository;
 import com.example.demo.repository.ExaminationMemberRepository;
 import com.example.demo.repository.ExaminationMemberSignatureRepository;
 import com.example.demo.repository.ExaminationRepository;
+import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.Quadra;
 import com.example.demo.repository.RefundExaminationRepository;
 import com.example.demo.repository.RefundRepository;
@@ -60,6 +64,7 @@ public class FWKeeperService {
 	@Autowired private RoleRepository roleRep;
 	@Autowired private RequestRepository reqRep;
 	@Autowired private RefundExaminationRepository reRep;
+	@Autowired private ItemRepository itemRep;
 	@Autowired private Criteria criteria;
 	
 	
@@ -77,8 +82,10 @@ public class FWKeeperService {
 	}
 	
 	
-	public List<ActionHolder> findRefundAction(long fwkid){
-		List<ActionHolder> res = new ArrayList<>();
+	
+	
+	public List<Object> findRefundAction(long fwkid){
+		List<Object> res = new ArrayList<>();
 		List<Action> act = criteria.findRefundAction(fwkid);
 		for(Action a : act) {
 			long aid = a.getAction_id();
@@ -86,11 +93,18 @@ public class FWKeeperService {
 			Date ad = a.getActionDate();
 			String wn =(signRep.findTopByActionOrderBySubmitDateAsc(actRep.findById(aid).get()).getRole().getWarehouse().getWarehouseName());
 			String lu = userRep.findById(criteria.getLastUser(aid)).get().getFullname();
-			int ap = 0;			
-			res.add(new ActionHolder(aid,an,ad,ap,wn,lu));
+			Object[] isExam = (Object[])isExamined(fwkid,aid);
+			int ap = (boolean)isExam[0] ? 1 : 0;
+			long cid = (long)isExam[1];
+			Object add = new Object[] {aid,an,ad,ap,wn,lu,cid};
+			res.add(add);
+//			res.add(cid);
 		}
 		return res;
 	}
+	
+	
+	
 	// GENERAL WAREHOUSE
 	public List<ActionHolder> findRequestAction(long fwkid){
 		List<ActionHolder> res = new ArrayList<>();
@@ -133,6 +147,10 @@ public class FWKeeperService {
 		return res;
 	}
 		
+	
+	public int difference(Date d1,Date d2) {
+		return actRep.getDateDif(d1, d2);
+	}
 	public String makeTransaction(Pair<Triple> input,long uid) {
 		List<Transaction> list = new ArrayList<>();
 
@@ -149,6 +167,16 @@ public class FWKeeperService {
 		}
 	
 		for(Transaction t : list) {
+			Item it = t.getStock().getItem();
+			Date d1 =  t.getAction().getActionDate();
+			Date d2 = t.getRequest().getAction().getActionDate();
+			int timeDifference = difference(d1,d2);
+			if(timeDifference > 0) {
+				it.setNumberOfTransactions(it.getNumberOfTransactions()+1);
+				it.setUnitDeliveredTime( ( it.getUnitDeliveredTime() * (it.getNumberOfTransactions()-1) + (t.getQuantity() / timeDifference) ) / (it.getNumberOfTransactions()) );
+				itemRep.save(it);
+			}
+			
 		long depWH = signRep.findTopByActionOrderBySubmitDateAsc(actRep.findById(t.getRequest().getAction().getAction_id()).get()).getRole().getWarehouse().getWarehouse_id();
 		t.setWarehouse(whRep.findById(depWH).get());
 		System.out.println("depWH: "+depWH);
@@ -284,4 +312,126 @@ public class FWKeeperService {
 		boolean found = ! (refexList == null | refexList.isEmpty());
 		return new Object[] { found , found ? refexList.get(0).getExaminationCommittee().getExamination_committee_id() : 0};
 	}
+	
+    public static final double[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
+
+        if (x.length != y.length) {
+            throw new IllegalArgumentException("X and Y must be the same length");
+        }
+        if (x.length == 1) {
+            throw new IllegalArgumentException("X must contain more than one value");
+        }
+        double[] dx = new double[x.length - 1];
+        double[] dy = new double[x.length - 1];
+        double[] slope = new double[x.length - 1];
+        double[] intercept = new double[x.length - 1];
+
+        // Calculate the line equation (i.e. slope and intercept) between each point
+        for (int i = 0; i < x.length - 1; i++) {
+            dx[i] = x[i + 1] - x[i];
+            if (dx[i] == 0) {
+                throw new IllegalArgumentException("X must be montotonic. A duplicate " + "x-value was found");
+            }
+            if (dx[i] < 0) {
+                throw new IllegalArgumentException("X must be sorted");
+            }
+            dy[i] = y[i + 1] - y[i];
+            slope[i] = dy[i] / dx[i];
+            intercept[i] = y[i] - x[i] * slope[i];
+        }
+
+        // Perform the interpolation here
+        double[] yi = new double[xi.length];
+        for (int i = 0; i < xi.length; i++) {
+            if ((xi[i] > x[x.length - 1]) || (xi[i] < x[0])) {
+                yi[i] = Double.NaN;
+            }
+            else {
+                int loc = Arrays.binarySearch(x, xi[i]);
+                if (loc < -1) {
+                    loc = -loc - 2;
+                    yi[i] = slope[loc] * xi[i] + intercept[loc];
+                }
+                else {
+                    yi[i] = y[loc];
+                }
+            }
+        }
+
+        return yi;
+    }
+    
+    public static final BigDecimal[] interpLinear(BigDecimal[] x, BigDecimal[] y, BigDecimal[] xi) {
+        if (x.length != y.length) {
+            throw new IllegalArgumentException("X and Y must be the same length");
+        }
+        if (x.length == 1) {
+            throw new IllegalArgumentException("X must contain more than one value");
+        }
+        BigDecimal[] dx = new BigDecimal[x.length - 1];
+        BigDecimal[] dy = new BigDecimal[x.length - 1];
+        BigDecimal[] slope = new BigDecimal[x.length - 1];
+        BigDecimal[] intercept = new BigDecimal[x.length - 1];
+
+        // Calculate the line equation (i.e. slope and intercept) between each point
+        BigInteger zero = new BigInteger("0");
+        BigDecimal minusOne = new BigDecimal(-1);
+         
+        for (int i = 0; i < x.length - 1; i++) {
+            //dx[i] = x[i + 1] - x[i];
+            dx[i] = x[i + 1].subtract(x[i]);
+            if (dx[i].equals(new BigDecimal(zero, dx[i].scale()))) {
+                throw new IllegalArgumentException("X must be montotonic. A duplicate " + "x-value was found");
+            }
+            if (dx[i].signum() < 0) {
+                throw new IllegalArgumentException("X must be sorted");
+            }
+            //dy[i] = y[i + 1] - y[i];
+            dy[i] = y[i + 1].subtract(y[i]);
+            //slope[i] = dy[i] / dx[i];
+            slope[i] = dy[i].divide(dx[i]);
+            //intercept[i] = y[i] - x[i] * slope[i];
+            intercept[i] = x[i].multiply(slope[i]).subtract(y[i]).multiply(minusOne);
+            //intercept[i] = y[i].subtract(x[i]).multiply(slope[i]);
+        }
+
+        // Perform the interpolation here
+        BigDecimal[] yi = new BigDecimal[xi.length];
+        for (int i = 0; i < xi.length; i++) {
+            //if ((xi[i] > x[x.length - 1]) || (xi[i] < x[0])) {
+            if (xi[i].compareTo(x[x.length - 1]) > 0 || xi[i].compareTo(x[0]) < 0) {
+                yi[i] = null; // same as NaN
+            }
+            else {
+                int loc = Arrays.binarySearch(x, xi[i]);
+                if (loc < -1) {
+                    loc = -loc - 2;
+                    //yi[i] = slope[loc] * xi[i] + intercept[loc];
+                    yi[i] = slope[loc].multiply(xi[i]).add(intercept[loc]);
+                }
+                else {
+                    yi[i] = y[loc];
+                }
+            }
+        }
+
+        return yi;
+    }
+
+    public static final double[] interpLinear(long[] x, double[] y, long[] xi) throws IllegalArgumentException {
+
+        double[] xd = new double[x.length];
+        for (int i = 0; i < x.length; i++) {
+            xd[i] = (double) x[i];
+        }
+
+        double[] xid = new double[xi.length];
+        for (int i = 0; i < xi.length; i++) {
+            xid[i] = (double) xi[i];
+        }
+
+        return interpLinear(xd, y, xid);
+    }
+	
+
 }		

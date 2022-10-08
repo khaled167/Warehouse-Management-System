@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.Action;
 import com.example.demo.entity.ActionHolder;
+import com.example.demo.entity.ItemMonthlyRequest;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
 import com.example.demo.entity.Request;
@@ -17,6 +18,7 @@ import com.example.demo.entity.Stock;
 import com.example.demo.entity.Transaction;
 import com.example.demo.query.Criteria;
 import com.example.demo.repository.ActionRepository;
+import com.example.demo.repository.ItemMonthlyRequestRepository;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.RefundRepository;
 import com.example.demo.repository.RequestHolder;
@@ -42,6 +44,7 @@ public class DepartmentMemberService {
 	@Autowired private WarehouseRepository whRep;
 	@Autowired private ItemRepository itRep;
 	@Autowired private RoleRepository roleRep;
+	@Autowired private ItemMonthlyRequestRepository imrRep;
 	@Autowired private Criteria criteria;
 	
 	
@@ -89,6 +92,8 @@ public class DepartmentMemberService {
 	}
 	// DEFINE THE GENERAL WAREHOUSE TAKEN FROM
 	public String makeRequestAction(Pair<RequestHolder> input,long uid) {
+		System.out.println(input);
+		System.out.println("makera");
 		Date date = new Date(System.currentTimeMillis());
 		Action act = new Action("طلب اضافة",input.notes,date);
 		actRep.save(act);
@@ -96,9 +101,23 @@ public class DepartmentMemberService {
 		for(int i = 0;i<input.getList().size();i++) {
 			Request r = new Request(act,itRep.getById(input.getList().get(i).getItemId()),input.getList().get(i).getExchange_reason(),input.getList().get(i).getNotes(),input.getList().get(i).getRequested_quantity());
 			list.add(r);
+			Date d = r.getAction().getActionDate();
+			ItemMonthlyRequest imr = imrRep.findByItemAndMonthNumberAndYearNumber(r.getItem(), d.getMonth()+1, d.getYear()+1900);
+			if(imr == null) {
+				imr = new ItemMonthlyRequest();
+				imr.setItem(r.getItem());
+				imr.setMonthNumber(d.getMonth()+1);
+				imr.setYearNumber(d.getYear()+1900);
+				imr.setQuantity(r.getRequested_quantity());
+			}
+			else {
+				imr.setQuantity(imr.getQuantity() + r.getRequested_quantity());
+			}
+			imrRep.save(imr);
 		}
 
 		// SEEN DATE MUST BE ADJUSTED
+		System.out.println("signature");
 		Signature signature = new Signature(act,roleRep.findTopByUserOrderByDateOfAssignDesc(userRep.findById(uid).get()),date,date);
 		signRep.save(signature);
 		reqRep.saveAll(list);
@@ -114,6 +133,7 @@ public class DepartmentMemberService {
 		for(int i = 0;i<input.list.size();i++) {
 			Refund r = new Refund(act,transRep.getById((Long)input.list.get(i).getId()),(double)input.list.get(i).getValue());
 			list.add(r);
+		
 		}
 		
 		for(Refund ref : list)

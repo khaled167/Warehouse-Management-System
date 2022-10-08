@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,8 @@ import com.example.demo.entity.Examination;
 import com.example.demo.entity.ExaminationCommittee;
 import com.example.demo.entity.ExaminationMemberSignature;
 import com.example.demo.entity.ExaminationParam;
+import com.example.demo.entity.Item;
+import com.example.demo.entity.ItemMonthlyRequest;
 import com.example.demo.entity.Pair;
 import com.example.demo.entity.Refund;
 import com.example.demo.entity.RefundExamination;
@@ -27,6 +31,7 @@ import com.example.demo.entity.Transaction;
 import com.example.demo.query.Criteria;
 import com.example.demo.repository.ActionRepository;
 import com.example.demo.repository.ExaminationCommitteeRepository;
+import com.example.demo.repository.ItemMonthlyRequestRepository;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.Quadra;
 import com.example.demo.repository.RoleRepository;
@@ -40,7 +45,7 @@ import com.example.demo.service.FWKeeperService;
 
 @RestController
 @RequestMapping("fwk/{fwkid}")
-@CrossOrigin("http://sciwarehouse.herokuapp.com")
+@CrossOrigin("http://localhost:3000")
 
 public class FWKeeperController {
 	
@@ -54,9 +59,45 @@ public class FWKeeperController {
 	@Autowired private ItemRepository itRep;	
 	@Autowired private SignatureRepository signRep;
 	@Autowired private ExaminationCommitteeRepository examinationCommitteeRepo;
+	@Autowired private ItemMonthlyRequestRepository imrRep;
 	@Autowired private Criteria criteria;
 	
 	
+	@GetMapping("/datapre")
+	public void makeData() {
+		List<Item> list = itRep.findAll();
+		Random r = new Random();
+		for(int year = 2010;year<=2022;year++) {
+			for(int month = 1;month<=12;month++) {
+				for(Item item:list) {
+				int quantity = r.nextInt(0,500);
+				ItemMonthlyRequest imr = new ItemMonthlyRequest();
+				imr.setItem(item);
+				imr.setMonthNumber(month);
+				imr.setYearNumber(year);
+				imr.setQuantity(quantity);
+				imrRep.save(imr);
+				}
+			}
+		}
+	}
+	
+	
+	@GetMapping("averageitem/{month}")
+	public List<Object> getAverageItem(@PathVariable("month") int month){
+		List<Item> items = itRep.findAll();
+		List<Object> res = new ArrayList<>();
+		for(Item item : items) {
+			List<ItemMonthlyRequest> imr = imrRep.findByItemAndMonthNumber(item, month);
+			double quantity = 0;
+			for(ItemMonthlyRequest im : imr)
+				quantity += im.getQuantity();
+			if(quantity > 0)
+			quantity/=imr.size();
+			res.add(new Object[] {item.getItem_id(),item.getItemName(),quantity});
+		}
+		return res;
+	}
 	
 	@GetMapping("instocks/{stid}")
 	public List<Transaction> inStock(@PathVariable("stid") long stid,@PathVariable("fwkid") long fwkid){
@@ -84,21 +125,31 @@ public class FWKeeperController {
 		else return null;
 	}
 	
-	@GetMapping("/requestdetails")
+//	@GetMapping("/requestdetails")
+//	public List<ActionHolder> findRequestAction(@PathVariable("fwkid") long fwkid) {
+//		return fwkServ.findRequestAction(fwkid);		
+//	}
+	
+	@GetMapping("/refunds/actiondetails")
+	public List<Object> findRefundAction(@PathVariable("fwkid") long fwkid) {
+//		if(type.equals("requests"))
+//			return fwkServ.findRequestAction(fwkid);
+			return fwkServ.findRefundAction(fwkid);
+//		if(type.equals("transactions"))
+//			return fwkServ.findTransactionAction(fwkid);
+	}
+	@GetMapping("/requests/actiondetails")
 	public List<ActionHolder> findRequestAction(@PathVariable("fwkid") long fwkid) {
-		return fwkServ.findRequestAction(fwkid);		
+			return fwkServ.findRequestAction(fwkid);
+	
 	}
 	
-	@GetMapping("/{act_type}/actiondetails")
-	public List<ActionHolder> findAction(@PathVariable("act_type")String type,@PathVariable("fwkid") long fwkid) {
-		if(type.equals("requests"))
-			return fwkServ.findRequestAction(fwkid);
-		if(type.equals("refunds"))
-			return fwkServ.findRefundAction(fwkid);
-		if(type.equals("transactions"))
+	
+	@GetMapping("/transactions/actiondetails")
+	public List<ActionHolder> findTransactionAction(@PathVariable("fwkid") long fwkid) {
 			return fwkServ.findTransactionAction(fwkid);
-		else return new ArrayList<>();
 	}
+
 //	@GetMapping("/doers/{actid}")
 //	public List<Long> doers(@PathVariable long actid){
 //		return fwkServ.doers(actid);

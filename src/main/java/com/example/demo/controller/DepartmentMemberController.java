@@ -34,7 +34,7 @@ import com.example.demo.service.DepartmentMemberService;
 
 @RestController
 @RequestMapping("dep_memb/{depid}")
-@CrossOrigin("http://sciwarehouse.herokuapp.com")
+@CrossOrigin("http://localhost:3000")
 
 public class DepartmentMemberController {
 

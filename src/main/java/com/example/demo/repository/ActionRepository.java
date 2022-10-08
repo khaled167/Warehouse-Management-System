@@ -1,8 +1,10 @@
 package com.example.demo.repository;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.example.demo.entity.Action;
 
@@ -28,6 +30,10 @@ public interface ActionRepository extends JpaRepository<Action, Long> {
 	
 	
 	List<Action> findByActionType(String actionType);	
+	
+	
+	@Query(value = "SELECT DATEDIFF(?1, ?2)",nativeQuery = true)
+	int getDateDif(Date d1,Date d2);
 	
 	
 }	
